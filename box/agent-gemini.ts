@@ -7,7 +7,7 @@ import { z } from "zod";
 const SKILL = readFileSync("/workspace/home/SKILL.md", "utf-8");
 
 const { text } = await generateText({
-  model: google("gemini-3.1-pro-preview"),
+  model: google("gemini-3.1-pro-preview", { useThinking: true }),
   system: SKILL,
   prompt: "Execute the daily trading process now. The command is: trade",
   tools: {
