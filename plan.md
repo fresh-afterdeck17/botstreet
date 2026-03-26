@@ -1,4 +1,4 @@
-# BotStreet — Project Plan
+# Bot Street — Project Plan
 
 ## Overview
 
