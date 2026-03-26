@@ -7,31 +7,16 @@ export const config = {
 	maxDuration: 300
 };
 
-const PROMPT = 'Read SKILL.md and follow its instructions. The command is: trade';
+const PROMPT = 'trade';
 
 const AGENTS = [
-	{ name: 'claude', idKey: 'BOX_CLAUDE_ID', custom: false },
-	{ name: 'gemini', idKey: 'BOX_GEMINI_ID', custom: true },
-	{ name: 'openai', idKey: 'BOX_OPENAI_ID', custom: false }
+	{ name: 'claude', boxName: 'botstreet-claude', custom: false },
+	{ name: 'gemini', boxName: 'botstreet-gemini', custom: true },
+	{ name: 'openai', boxName: 'botstreet-openai', custom: false }
 ];
 
 async function runAgent(agent: (typeof AGENTS)[number]) {
-	const boxId = env[agent.idKey];
-	if (!boxId) throw new Error(`${agent.idKey} not set`);
-
-	const box = await Box.get(boxId, { apiKey: env.UPSTASH_BOX_API_KEY });
-
-	// Check if already traded today
-	try {
-		const raw = await box.files.read(`/workspace/home/agents/${agent.name}/portfolio.json`);
-		const portfolio = JSON.parse(raw);
-		const today = new Date().toISOString().split('T')[0];
-		if (portfolio.last_trade_date === today) {
-			return { name: agent.name, status: 'skipped', reason: 'already traded today' };
-		}
-	} catch {
-		// Portfolio doesn't exist or can't be read — proceed anyway
-	}
+	const box = await Box.getByName(agent.boxName, { apiKey: env.UPSTASH_BOX_API_KEY });
 
 	if (agent.custom) {
 		const run = await box.exec.command(
@@ -44,7 +29,7 @@ async function runAgent(agent: (typeof AGENTS)[number]) {
 	}
 }
 
-export const GET: RequestHandler = async () => {
+export const POST: RequestHandler = async () => {
 	const timestamp = new Date().toISOString();
 	const results = await Promise.allSettled(AGENTS.map(runAgent));
 

@@ -1,12 +1,12 @@
 import "dotenv/config";
 import { Box } from "@upstash/box";
 
-const PROMPT = "Read SKILL.md and follow its instructions. The command is: trade";
+const PROMPT = "trade";
 
 const agents = [
-  { name: "claude", boxId: process.env.BOX_CLAUDE_ID!, customAgent: false },
-  { name: "gemini", boxId: process.env.BOX_GEMINI_ID!, customAgent: true },
-  { name: "openai", boxId: process.env.BOX_OPENAI_ID!, customAgent: false },
+  { name: "claude", boxName: "botstreet-claude", customAgent: false },
+  { name: "gemini", boxName: "botstreet-gemini", customAgent: true },
+  { name: "openai", boxName: "botstreet-openai", customAgent: false },
 ];
 
 let passed = 0;
@@ -103,11 +103,7 @@ async function main() {
   console.log("[Pre-flight]");
   const boxes: Record<string, any> = {};
   for (const agent of agents) {
-    if (!agent.boxId) {
-      console.log(`  ✗ ${agent.name}: BOX ID not set`);
-      process.exit(1);
-    }
-    const box = await Box.get(agent.boxId);
+    const box = await Box.getByName(agent.boxName);
     boxes[agent.name] = box;
 
     const skill = await readFile(box, "/workspace/home/SKILL.md");

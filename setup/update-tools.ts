@@ -8,16 +8,16 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
 
 const boxes = [
-  { name: "claude", id: process.env.BOX_CLAUDE_ID! },
-  { name: "gemini", id: process.env.BOX_GEMINI_ID! },
-  { name: "openai", id: process.env.BOX_OPENAI_ID! },
+  { name: "claude", boxName: "botstreet-claude" },
+  { name: "gemini", boxName: "botstreet-gemini" },
+  { name: "openai", boxName: "botstreet-openai" },
 ];
 
 const target = process.argv[2];
 
-async function updateBox(name: string, boxId: string) {
-  console.log(`Updating ${name} (${boxId})...`);
-  const box = await Box.get(boxId);
+async function updateBox(name: string, boxName: string) {
+  console.log(`Updating ${name} (${boxName})...`);
+  const box = await Box.getByName(boxName);
 
   // Upload all tool files
   const toolsDir = path.join(ROOT, "box/tools");
@@ -30,11 +30,17 @@ async function updateBox(name: string, boxId: string) {
   );
   console.log(`  Uploaded ${toolFiles.length} tool files`);
 
-  // Upload SKILL.md to workspace root
+  // Upload SKILL.md as the auto-loaded config file for each agent type:
+  // - CLAUDE.md for Claude Code agents
+  // - AGENTS.md for OpenAI Codex agents
+  // - SKILL.md for Gemini (reads it directly via readFileSync)
+  const skillPath = path.join(ROOT, "skill/SKILL.md");
   await box.files.upload([
-    { path: path.join(ROOT, "skill/SKILL.md"), destination: "/workspace/home/SKILL.md" },
+    { path: skillPath, destination: "/workspace/home/CLAUDE.md" },
+    { path: skillPath, destination: "/workspace/home/AGENTS.md" },
+    { path: skillPath, destination: "/workspace/home/SKILL.md" },
   ]);
-  console.log(`  Uploaded SKILL.md`);
+  console.log(`  Uploaded CLAUDE.md + AGENTS.md + SKILL.md`);
 
   // Upload custom agent script for Gemini
   if (name === "gemini") {
@@ -70,7 +76,7 @@ async function main() {
     process.exit(1);
   }
   for (const b of targets) {
-    await updateBox(b.name, b.id);
+    await updateBox(b.name, b.boxName);
   }
 }
 

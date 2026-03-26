@@ -3,9 +3,9 @@ import { env } from '$env/dynamic/private';
 import type { Portfolio, HistorySnapshot, MarketQuote } from '$lib/types.js';
 
 const AGENTS = [
-	{ name: 'claude', idKey: 'BOX_CLAUDE_ID' },
-	{ name: 'gemini', idKey: 'BOX_GEMINI_ID' },
-	{ name: 'openai', idKey: 'BOX_OPENAI_ID' }
+	{ name: 'claude', boxName: 'botstreet-claude' },
+	{ name: 'gemini', boxName: 'botstreet-gemini' },
+	{ name: 'openai', boxName: 'botstreet-openai' }
 ] as const;
 
 async function readJson<T>(box: Box, path: string): Promise<T | null> {
@@ -20,10 +20,8 @@ async function readJson<T>(box: Box, path: string): Promise<T | null> {
 export async function fetchPortfolios(): Promise<Portfolio[]> {
 	const portfolios = await Promise.all(
 		AGENTS.map(async (agent) => {
-			const boxId = env[agent.idKey];
-			if (!boxId) return null;
 			try {
-				const box = await Box.get(boxId, { apiKey: env.UPSTASH_BOX_API_KEY });
+				const box = await Box.getByName(agent.boxName, { apiKey: env.UPSTASH_BOX_API_KEY });
 				return await readJson<Portfolio>(box, `/workspace/home/agents/${agent.name}/portfolio.json`);
 			} catch (e) {
 				console.error(`[fetchPortfolios] ${agent.name} failed:`, e);
@@ -72,11 +70,11 @@ export async function refreshPortfolioPrices(portfolio: Portfolio): Promise<Port
 }
 
 export async function fetchHistory(agentName: string): Promise<HistorySnapshot[]> {
-	const idKey = AGENTS.find((a) => a.name === agentName)?.idKey;
-	if (!idKey || !env[idKey]) return [];
+	const agent = AGENTS.find((a) => a.name === agentName);
+	if (!agent) return [];
 
 	try {
-		const box = await Box.get(env[idKey]!, { apiKey: env.UPSTASH_BOX_API_KEY });
+		const box = await Box.getByName(agent.boxName, { apiKey: env.UPSTASH_BOX_API_KEY });
 		const files = await box.files.list(`/workspace/home/agents/${agentName}/history`);
 		const jsonFiles = files
 			.filter((f: any) => f.name?.endsWith('.json') || f.path?.endsWith('.json'))
@@ -92,11 +90,11 @@ export async function fetchHistory(agentName: string): Promise<HistorySnapshot[]
 }
 
 export async function fetchDiary(agentName: string): Promise<string> {
-	const idKey = AGENTS.find((a) => a.name === agentName)?.idKey;
-	if (!idKey || !env[idKey]) return '';
+	const agent = AGENTS.find((a) => a.name === agentName);
+	if (!agent) return '';
 
 	try {
-		const box = await Box.get(env[idKey]!, { apiKey: env.UPSTASH_BOX_API_KEY });
+		const box = await Box.getByName(agent.boxName, { apiKey: env.UPSTASH_BOX_API_KEY });
 		return await box.files.read(`/workspace/home/agents/${agentName}/diary.md`);
 	} catch {
 		return '';

@@ -7,7 +7,7 @@
     "trigger": "tsx trigger/run-daily.ts"
   },
   "dependencies": {
-    "@upstash/box": "latest",
+    "@upstash/box": "^0.1.29",
     "dotenv": "^16.0.0"
   },
   "devDependencies": {

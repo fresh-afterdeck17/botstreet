@@ -59,19 +59,16 @@ function initialPortfolio(agentName: string): string {
 async function setup() {
   console.log("=== BotStreet — Box Setup ===\n");
 
-  const boxIds: Record<string, string> = {};
-
   for (const config of agents) {
     console.log(`Creating box for ${config.name}...`);
 
-    const boxConfig: any = { runtime: "node" };
+    const boxConfig: any = { runtime: "node", name: `botstreet-${config.name}` };
     if (config.agent) {
       boxConfig.agent = config.agent;
     }
 
     const box = await Box.create(boxConfig);
-    console.log(`  Box created: ${box.id}`);
-    boxIds[config.name] = box.id;
+    console.log(`  Box created: ${box.id} (${boxConfig.name})`);
 
     // Upload package.json and tsconfig.json
     await box.files.upload([
@@ -97,14 +94,17 @@ async function setup() {
     );
     console.log(`  Uploaded ${toolFiles.length} tool files`);
 
-    // Upload SKILL.md to workspace root
+    // Upload SKILL.md as the auto-loaded config file for each agent type:
+    // - CLAUDE.md for Claude Code agents
+    // - AGENTS.md for OpenAI Codex agents
+    // - SKILL.md for Gemini (reads it directly via readFileSync)
+    const skillPath = path.join(ROOT, "skill/SKILL.md");
     await box.files.upload([
-      {
-        path: path.join(ROOT, "skill/SKILL.md"),
-        destination: "/workspace/home/SKILL.md",
-      },
+      { path: skillPath, destination: "/workspace/home/CLAUDE.md" },
+      { path: skillPath, destination: "/workspace/home/AGENTS.md" },
+      { path: skillPath, destination: "/workspace/home/SKILL.md" },
     ]);
-    console.log(`  Uploaded SKILL.md`);
+    console.log(`  Uploaded CLAUDE.md + AGENTS.md + SKILL.md`);
 
     // Upload custom agent script for Gemini
     if (config.customAgent) {
@@ -165,14 +165,17 @@ async function setup() {
     console.log(`  ✓ ${config.name} ready\n`);
   }
 
-  console.log("=== Box IDs (add these to your .env) ===\n");
-  for (const [name, id] of Object.entries(boxIds)) {
-    console.log(`BOX_${name.toUpperCase()}_ID=${id}`);
-  }
-  console.log();
+  console.log("=== Setup complete. Boxes named: botstreet-claude, botstreet-gemini, botstreet-openai ===\n");
 }
 
-setup().catch((err) => {
-  console.error("Setup failed:", err);
-  process.exit(1);
-});
+export { setup };
+
+// Run directly if this is the main module
+const isMain = import.meta.url === `file://${process.argv[1]}` ||
+  import.meta.url === new URL(process.argv[1], "file://").href;
+if (isMain) {
+  setup().catch((err) => {
+    console.error("Setup failed:", err);
+    process.exit(1);
+  });
+}

@@ -1,9 +1,9 @@
 import "dotenv/config";
 import { Box } from "@upstash/box";
 
-const BOX_ID = process.env.BOX_CLAUDE_ID!;
+const BOX_NAME = "botstreet-claude";
 const AGENT = "claude";
-const PROMPT = "Read SKILL.md and follow its instructions. The command is: trade";
+const PROMPT = "trade";
 
 let passed = 0;
 let failed = 0;
@@ -42,13 +42,8 @@ async function runCmd(box: any, cmd: string): Promise<any> {
 async function main() {
   console.log("=== BotStreet Phase 2 Tests — Single Agent End-to-End ===\n");
 
-  if (!BOX_ID) {
-    console.error("BOX_CLAUDE_ID not set in .env");
-    process.exit(1);
-  }
-
-  const box = await Box.get(BOX_ID);
-  console.log(`Box: ${BOX_ID}\n`);
+  const box = await Box.getByName(BOX_NAME);
+  console.log(`Box: ${BOX_NAME}\n`);
 
   // ── Pre-flight ──
   console.log("[Pre-flight]");
