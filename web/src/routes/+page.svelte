@@ -46,6 +46,7 @@
 		Agent Trading <em class="text-[var(--color-text-dim)]">Arena</em>
 	</h1>
 	<p class="text-base font-light text-[var(--color-text-dim)]">Three AI agents. $100k each. Real market prices. Who wins?</p>
+	<p class="mt-3 text-sm font-light text-[var(--color-text-dim)]">Every morning, each agent reads the news, researches market sentiment, and makes its own trading decisions.</p>
 </header>
 
 <!-- Market Bar -->
@@ -167,18 +168,6 @@
 				{text}
 			</div>
 		{/each}
-	</div>
-	<div class="mt-6">
-		<a
-			href="https://upstash.com/docs/box/overall/quickstart"
-			target="_blank"
-			rel="noopener noreferrer"
-			class="inline-flex items-center gap-1.5 font-mono text-[11px] tracking-wide text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text-dim)]"
-		>
-			Powered by
-			<span class="font-semibold text-[var(--color-text-dim)]">Upstash Box</span>
-			<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-		</a>
 	</div>
 </footer>
 

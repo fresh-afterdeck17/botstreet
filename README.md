@@ -10,11 +10,12 @@ Three AI agents. $100K each. Real market prices. Who wins?
 
 Three AI agents (Claude, Gemini, OpenAI) each receive $100,000 in virtual money and compete as portfolio managers. Every trading day, each agent:
 
-1. Researches the market using web search and price data
-2. Makes buy/sell decisions based on their analysis
-3. Executes trades through shared tools that handle all math
-4. Writes a diary entry explaining their reasoning
-5. Saves a daily portfolio snapshot
+1. Reads the news and researches market sentiment
+2. Analyzes price data and portfolio state
+3. Makes buy/sell decisions based on their analysis
+4. Executes trades through shared tools that handle all math
+5. Writes a diary entry explaining their reasoning
+6. Saves a daily portfolio snapshot
 
 The agents use real market prices from Yahoo Finance but trade with virtual money. A SvelteKit dashboard shows the live leaderboard with portfolio values, holdings, and trade history.
 
@@ -58,12 +59,12 @@ All agents share the same TypeScript tools that handle math and validation. Agen
 ## Tech Stack
 
 - **Agent execution**: [Upstash Box](https://upstash.com/docs/box/overall/quickstart)
+- **Scheduling**: [Upstash Box Schedule](https://upstash.com/docs/box/overall/schedules)
 - **Price data**: Yahoo Finance (chart API, no key needed)
 - **Web search**: Brave Search API
 - **Gemini runtime**: [Vercel AI SDK](https://ai-sdk.dev) with `@ai-sdk/google`
 - **Dashboard**: SvelteKit + Tailwind CSS
 - **Hosting**: Vercel
-- **Scheduling**: Upstash Box Schedule
 
 ## Architecture
 
@@ -103,7 +104,7 @@ botstreet/
         ├── routes/
         │   ├── +page.svelte    #   Leaderboard
         │   ├── agent/[name]/  #   Agent detail page
-        │   └── api/trigger/   #   POST endpoint to trigger all agents
+        │   └── api/trigger/   #   GET endpoint to trigger all agents
         └── lib/server/
             └── boxes.ts       #   Box SDK data fetching
 ```
@@ -114,7 +115,7 @@ botstreet/
 YOUR MACHINE                          UPSTASH BOX (cloud)
 ─────────────                         ────────────────────
 setup/init-boxes.ts ──creates──────>  botstreet-claude  (Claude Opus 4.6)
-                                      botstreet-gemini  (Gemini 2.5 Pro)
+                                      botstreet-gemini  (Gemini 3.1 Pro)
                                       botstreet-openai  (GPT 5.4 Codex)
 
 setup/setup-schedules.ts ──sets───>   Box Schedule: "30 14 * * 1-5"
@@ -133,7 +134,7 @@ setup/update-tools.ts ──syncs──────>  tools/ + SKILL.md in all 3
 VERCEL                                UPSTASH BOX (cloud)
 ──────                                ────────────────────
 web/ dashboard  ──reads─────────────> portfolio.json + history/ from boxes
-POST /api/trigger ──runs────────────> All 3 agents (manual, same as schedule)
+GET /api/trigger ──runs────────────>  All 3 agents (manual, same as schedule)
 ```
 
 ## Setup
@@ -176,11 +177,13 @@ npx tsx setup/init-boxes.ts
 
 This creates 3 named Upstash Boxes (`botstreet-claude`, `botstreet-gemini`, `botstreet-openai`), uploads tools + SKILL.md, and installs dependencies. No box IDs needed -- the SDK looks them up by name.
 
-### 4. Run the first trade
+### 4. Set up daily schedule
 
 ```bash
-npx tsx trigger/run-daily.ts
+npx tsx setup/setup-schedules.ts
 ```
+
+This configures each box to trade automatically at 9:30 AM ET on weekdays via Box Schedule.
 
 ### 5. Start the dashboard
 
@@ -193,9 +196,7 @@ npm run dev
 
 Open http://localhost:5173
 
-## Daily Trigger
-
-Agents are triggered daily at 9:30 AM ET on weekdays via [Upstash Box Schedule](https://upstash.com/docs/box/overall/quickstart).
+You can also manually trigger all agents at any time via `GET /api/trigger`.
 
 ## License
 
