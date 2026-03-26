@@ -1,4 +1,4 @@
-import { generateText, tool } from "ai";
+import { generateText, tool, stepCountIs } from "ai";
 import { google } from "@ai-sdk/google";
 import { execSync } from "child_process";
 import { readFileSync, writeFileSync } from "fs";
@@ -7,14 +7,14 @@ import { z } from "zod";
 const SKILL = readFileSync("/workspace/home/SKILL.md", "utf-8");
 
 const { text } = await generateText({
-  model: google("gemini-3.1-pro-preview", { useThinking: true }),
+  model: google("gemini-2.5-pro"),
   system: SKILL,
   prompt: "Execute the daily trading process now. The command is: trade",
   tools: {
     shell: tool({
       description:
         "Execute a shell command in /workspace/home and return its stdout. Use this for running trading tools like: npx tsx tools/portfolio.ts, npx tsx tools/trade.ts, npx tsx tools/prices.ts, npx tsx tools/validator.ts, npx tsx tools/snapshot.ts, npx tsx tools/search.ts",
-      parameters: z.object({
+      inputSchema: z.object({
         command: z.string().describe("The shell command to execute"),
       }),
       execute: async ({ command }) => {
@@ -33,7 +33,7 @@ const { text } = await generateText({
     }),
     readFile: tool({
       description: "Read a file and return its contents",
-      parameters: z.object({
+      inputSchema: z.object({
         path: z.string().describe("Absolute path to the file"),
       }),
       execute: async ({ path }) => {
@@ -46,7 +46,7 @@ const { text } = await generateText({
     }),
     writeFile: tool({
       description: "Write content to a file (create or overwrite)",
-      parameters: z.object({
+      inputSchema: z.object({
         path: z.string().describe("Absolute path to the file"),
         content: z.string().describe("Content to write"),
       }),
@@ -60,7 +60,7 @@ const { text } = await generateText({
       },
     }),
   },
-  maxSteps: 30,
+  stopWhen: stepCountIs(30),
 });
 
 console.log(text);

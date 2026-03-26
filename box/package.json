@@ -3,8 +3,8 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "ai": "^4.0.0",
-    "@ai-sdk/google": "^1.0.0",
+    "ai": "latest",
+    "@ai-sdk/google": "latest",
     "zod": "^3.0.0"
   },
   "devDependencies": {
