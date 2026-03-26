@@ -34,6 +34,43 @@ export async function fetchPortfolios(): Promise<Portfolio[]> {
 	return portfolios.filter((p): p is Portfolio => p !== null);
 }
 
+async function fetchLivePrice(ticker: string): Promise<number | null> {
+	try {
+		const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?range=1d&interval=1d`;
+		const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+		const data = (await res.json()) as any;
+		return data?.chart?.result?.[0]?.meta?.regularMarketPrice ?? null;
+	} catch {
+		return null;
+	}
+}
+
+export async function refreshPortfolioPrices(portfolio: Portfolio): Promise<Portfolio> {
+	if (portfolio.holdings.length === 0) return portfolio;
+
+	const tickers = portfolio.holdings.map((h) => h.ticker);
+	const prices = await Promise.all(tickers.map(fetchLivePrice));
+	const priceMap = new Map(tickers.map((t, i) => [t, prices[i]]));
+
+	const updatedHoldings = portfolio.holdings.map((h) => {
+		const livePrice = priceMap.get(h.ticker);
+		if (!livePrice || livePrice <= 0) return h;
+		const dollars = Math.round(h.shares * livePrice * 100) / 100;
+		const unrealized_pnl_pct = Math.round(((livePrice - h.avg_entry_price) / h.avg_entry_price) * 10000) / 100;
+		return { ...h, current_price: livePrice, dollars, unrealized_pnl_pct };
+	});
+
+	const totalValue = Math.round((portfolio.cash + updatedHoldings.reduce((s, h) => s + h.dollars, 0)) * 100) / 100;
+	const allTimeReturn = Math.round(((totalValue - portfolio.starting_balance) / portfolio.starting_balance) * 10000) / 100;
+
+	return {
+		...portfolio,
+		holdings: updatedHoldings,
+		total_value: totalValue,
+		all_time_return_pct: allTimeReturn,
+	};
+}
+
 export async function fetchHistory(agentName: string): Promise<HistorySnapshot[]> {
 	const idKey = AGENTS.find((a) => a.name === agentName)?.idKey;
 	if (!idKey || !env[idKey]) return [];

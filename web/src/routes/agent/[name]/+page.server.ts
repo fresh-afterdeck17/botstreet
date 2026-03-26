@@ -1,4 +1,4 @@
-import { fetchPortfolios, fetchHistory, fetchDiary } from '$lib/server/boxes.js';
+import { fetchPortfolios, fetchHistory, fetchDiary, refreshPortfolioPrices } from '$lib/server/boxes.js';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types.js';
 
@@ -11,8 +11,9 @@ export const load: PageServerLoad = async ({ params }) => {
 		fetchDiary(name)
 	]);
 
-	const portfolio = portfolios.find((p) => p.agent === name);
-	if (!portfolio) throw error(404, `Agent "${name}" not found`);
+	const rawPortfolio = portfolios.find((p) => p.agent === name);
+	if (!rawPortfolio) throw error(404, `Agent "${name}" not found`);
+	const portfolio = await refreshPortfolioPrices(rawPortfolio);
 
 	// Collect all trades from history
 	const allTrades = history
