@@ -11,8 +11,8 @@
 
 	const models: Record<string, string> = {
 		claude: 'claude-opus-4.6',
-		gemini: 'gemini-2.5-pro',
-		openai: 'gpt-5.3-codex',
+		gemini: 'gemini-3.1-pro-preview',
+		openai: 'gpt-5.4',
 	};
 
 	function fmt(n: number): string {
