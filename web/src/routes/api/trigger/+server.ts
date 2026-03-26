@@ -18,6 +18,18 @@ const AGENTS = [
 async function runAgent(agent: (typeof AGENTS)[number]) {
 	const box = await Box.getByName(agent.boxName, { apiKey: env.UPSTASH_BOX_API_KEY });
 
+	// Check if already traded today
+	try {
+		const raw = await box.files.read(`/workspace/home/agents/${agent.name}/portfolio.json`);
+		const portfolio = JSON.parse(raw);
+		const today = new Date().toISOString().split('T')[0];
+		if (portfolio.last_trade_date === today) {
+			return { name: agent.name, status: 'skipped', reason: 'already traded today' };
+		}
+	} catch {
+		// Can't read portfolio — proceed anyway
+	}
+
 	if (agent.custom) {
 		const run = await box.exec.command(
 			'cd /workspace/home && export $(cat .env | xargs) && npx tsx agent-gemini.ts 2>&1'
@@ -29,7 +41,7 @@ async function runAgent(agent: (typeof AGENTS)[number]) {
 	}
 }
 
-export const POST: RequestHandler = async () => {
+export const GET: RequestHandler = async () => {
 	const timestamp = new Date().toISOString();
 	const results = await Promise.allSettled(AGENTS.map(runAgent));
 
