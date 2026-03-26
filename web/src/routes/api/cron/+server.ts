@@ -3,6 +3,10 @@ import { env } from '$env/dynamic/private';
 import { Box } from '@upstash/box';
 import type { RequestHandler } from './$types.js';
 
+export const config = {
+	maxDuration: 300
+};
+
 const PROMPT = 'Read SKILL.md and follow its instructions. The command is: trade';
 
 const AGENTS = [
@@ -40,13 +44,7 @@ async function runAgent(agent: (typeof AGENTS)[number]) {
 	}
 }
 
-export const GET: RequestHandler = async ({ request }) => {
-	// Verify cron secret to prevent unauthorized triggers
-	const authHeader = request.headers.get('authorization');
-	if (env.CRON_SECRET && authHeader !== `Bearer ${env.CRON_SECRET}`) {
-		return json({ error: 'Unauthorized' }, { status: 401 });
-	}
-
+export const GET: RequestHandler = async () => {
 	const timestamp = new Date().toISOString();
 	const results = await Promise.allSettled(AGENTS.map(runAgent));
 

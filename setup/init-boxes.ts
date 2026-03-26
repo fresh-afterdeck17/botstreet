@@ -30,7 +30,7 @@ const agents: AgentDef[] = [
     name: "openai",
     agent: {
       provider: Agent.Codex,
-      model: OpenAICodex.GPT_5_3_Codex,
+      model: "openai/gpt-5.4",
       apiKey: process.env.OPENAI_API_KEY!,
     },
   },
@@ -75,8 +75,14 @@ async function setup() {
 
     // Upload package.json and tsconfig.json
     await box.files.upload([
-      { path: path.join(ROOT, "box/package.json"), destination: "/workspace/home/package.json" },
-      { path: path.join(ROOT, "box/tsconfig.json"), destination: "/workspace/home/tsconfig.json" },
+      {
+        path: path.join(ROOT, "box/package.json"),
+        destination: "/workspace/home/package.json",
+      },
+      {
+        path: path.join(ROOT, "box/tsconfig.json"),
+        destination: "/workspace/home/tsconfig.json",
+      },
     ]);
     console.log(`  Uploaded package.json + tsconfig.json`);
 
@@ -93,14 +99,20 @@ async function setup() {
 
     // Upload SKILL.md to workspace root
     await box.files.upload([
-      { path: path.join(ROOT, "skill/SKILL.md"), destination: "/workspace/home/SKILL.md" },
+      {
+        path: path.join(ROOT, "skill/SKILL.md"),
+        destination: "/workspace/home/SKILL.md",
+      },
     ]);
     console.log(`  Uploaded SKILL.md`);
 
     // Upload custom agent script for Gemini
     if (config.customAgent) {
       await box.files.upload([
-        { path: path.join(ROOT, "box/agent-gemini.ts"), destination: "/workspace/home/agent-gemini.ts" },
+        {
+          path: path.join(ROOT, "box/agent-gemini.ts"),
+          destination: "/workspace/home/agent-gemini.ts",
+        },
       ]);
       console.log(`  Uploaded agent-gemini.ts`);
     }
@@ -130,9 +142,12 @@ async function setup() {
 
     // Write .env inside box
     const envLines: string[] = [];
-    if (process.env.BRAVE_API_KEY) envLines.push(`BRAVE_API_KEY=${process.env.BRAVE_API_KEY}`);
+    if (process.env.BRAVE_API_KEY)
+      envLines.push(`BRAVE_API_KEY=${process.env.BRAVE_API_KEY}`);
     if (config.customAgent && process.env.GOOGLE_API_KEY) {
-      envLines.push(`GOOGLE_GENERATIVE_AI_API_KEY=${process.env.GOOGLE_API_KEY}`);
+      envLines.push(
+        `GOOGLE_GENERATIVE_AI_API_KEY=${process.env.GOOGLE_API_KEY}`,
+      );
     }
     if (envLines.length > 0) {
       await box.files.write({
