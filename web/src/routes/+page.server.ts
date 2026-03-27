@@ -1,11 +1,10 @@
-import { fetchPortfolios, fetchMarketData, refreshPortfolioPrices } from '$lib/server/boxes.js';
+import { fetchHomepageData } from '$lib/server/boxes.js';
 import type { PageServerLoad } from './$types.js';
 
-export const load: PageServerLoad = async () => {
-	const [rawPortfolios, market] = await Promise.all([fetchPortfolios(), fetchMarketData()]);
+export const load: PageServerLoad = async ({ setHeaders }) => {
+	setHeaders({
+		'cache-control': 'public, max-age=0, s-maxage=30, stale-while-revalidate=300'
+	});
 
-	const portfolios = await Promise.all(rawPortfolios.map(refreshPortfolioPrices));
-	const sorted = [...portfolios].sort((a, b) => b.total_value - a.total_value);
-
-	return { portfolios: sorted, market };
+	return fetchHomepageData();
 };

@@ -1,4 +1,5 @@
 import { getBoxByName } from '$lib/server/box.js';
+import { getOrSetCache } from '$lib/server/cache.js';
 import type { Portfolio, HistorySnapshot, MarketQuote } from '$lib/types.js';
 
 const AGENTS = [
@@ -6,6 +7,8 @@ const AGENTS = [
 	{ name: 'gemini', boxName: 'botstreet-gemini' },
 	{ name: 'openai', boxName: 'botstreet-openai' }
 ] as const;
+
+const HOMEPAGE_CACHE_TTL_MS = 30 * 1000;
 
 async function readJson<T>(box: Awaited<ReturnType<typeof getBoxByName>>, path: string): Promise<T | null> {
 	try {
@@ -137,4 +140,14 @@ export async function fetchMarketData(): Promise<MarketQuote[]> {
 		})
 	);
 	return quotes;
+}
+
+export async function fetchHomepageData(): Promise<{ portfolios: Portfolio[]; market: MarketQuote[] }> {
+	return getOrSetCache('homepage:data', HOMEPAGE_CACHE_TTL_MS, async () => {
+		const [rawPortfolios, market] = await Promise.all([fetchPortfolios(), fetchMarketData()]);
+		const portfolios = await Promise.all(rawPortfolios.map(refreshPortfolioPrices));
+		const sorted = [...portfolios].sort((a, b) => b.total_value - a.total_value);
+
+		return { portfolios: sorted, market };
+	});
 }
