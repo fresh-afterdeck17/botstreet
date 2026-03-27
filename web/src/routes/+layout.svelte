@@ -15,7 +15,7 @@
 			<span class="font-semibold">Upstash Box</span>
 		</a>
 		<a
-			href="https://github.com/enesakar/botstreet"
+			href="https://github.com/upstash/botstreet"
 			target="_blank"
 			rel="noopener noreferrer"
 			class="inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 font-mono text-[11px] text-[var(--color-text-dim)] transition-colors hover:border-[var(--color-text-muted)] hover:text-[var(--color-text)]"

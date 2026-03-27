@@ -1,14 +1,15 @@
-import { fetchPortfolios, fetchHistory, fetchDiary, refreshPortfolioPrices } from '$lib/server/boxes.js';
+import { fetchPortfolios, fetchHistory, fetchDiary, fetchMemory, refreshPortfolioPrices } from '$lib/server/boxes.js';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types.js';
 
 export const load: PageServerLoad = async ({ params }) => {
 	const name = params.name;
 
-	const [portfolios, history, diary] = await Promise.all([
+	const [portfolios, history, diary, memory] = await Promise.all([
 		fetchPortfolios(),
 		fetchHistory(name),
-		fetchDiary(name)
+		fetchDiary(name),
+		fetchMemory(name)
 	]);
 
 	const rawPortfolio = portfolios.find((p) => p.agent === name);
@@ -26,5 +27,5 @@ export const load: PageServerLoad = async ({ params }) => {
 		)
 		.reverse();
 
-	return { portfolio, history, diary, trades: allTrades };
+	return { portfolio, history, diary, memory, trades: allTrades };
 };

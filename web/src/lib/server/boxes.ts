@@ -100,6 +100,18 @@ export async function fetchDiary(agentName: string): Promise<string> {
 	}
 }
 
+export async function fetchMemory(agentName: string): Promise<string> {
+	const agent = AGENTS.find((a) => a.name === agentName);
+	if (!agent) return '';
+
+	try {
+		const box = await getBoxByName(agent.boxName);
+		return await box.files.read(`/workspace/home/agents/${agentName}/memory.md`);
+	} catch {
+		return '';
+	}
+}
+
 export async function fetchMarketData(): Promise<MarketQuote[]> {
 	const tickers = [
 		{ ticker: '^GSPC', name: 'S&P 500' },

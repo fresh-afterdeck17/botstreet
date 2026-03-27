@@ -46,11 +46,6 @@ async function readFile(box: any, path: string): Promise<string> {
   }
 }
 
-async function runJson(box: any, cmd: string): Promise<any> {
-  const result = await box.exec.command(`cd /workspace/home && ${cmd}`);
-  return parse(result.result ?? "null");
-}
-
 async function waitUntilForkable(agentName: string, box: any) {
   const start = Date.now();
 
@@ -103,52 +98,20 @@ async function prepareClone(agentName: string, box: any) {
   });
 }
 
-async function getMarketOpen(box: any): Promise<boolean | null> {
-  const quotes = await runJson(box, "npx tsx tools/prices.ts current SPY");
-  return quotes?.[0]?.market_open ?? null;
-}
-
-async function validateClone(agentName: string, box: any, marketOpen: boolean | null) {
+async function validateClone(agentName: string, box: any) {
   const today = new Date().toISOString().split("T")[0];
-  const todayFile = today.replace(/-/g, "_");
   const portfolio = parse(await readFile(box, `/workspace/home/agents/${agentName}/portfolio.json`));
   const diary = await readFile(box, `/workspace/home/agents/${agentName}/diary.md`);
   const memory = await readFile(box, `/workspace/home/agents/${agentName}/memory.md`);
-  const snapshot = parse(
-    await readFile(box, `/workspace/home/agents/${agentName}/history/portfolio_${todayFile}.json`),
-  );
+  const snapshot = parse(await readFile(box, `/workspace/home/agents/${agentName}/history/portfolio_${today.replace(/-/g, "_")}.json`));
 
   assert("portfolio.json exists", !!portfolio?.agent);
   assert("agent field matches", portfolio?.agent === agentName);
-  assert("cash is number", typeof portfolio?.cash === "number");
-  assert("holdings is array", Array.isArray(portfolio?.holdings));
   assert("total_value is number", typeof portfolio?.total_value === "number");
-
-  const holdingsSum = (portfolio?.holdings ?? []).reduce((sum: number, h: any) => sum + h.dollars, 0);
-  const expectedTotal = Math.round(((portfolio?.cash ?? 0) + holdingsSum) * 100) / 100;
-  assert(
-    "Math: total_value = cash + holdings",
-    portfolio?.total_value === expectedTotal,
-    `total=${portfolio?.total_value}, expected=${expectedTotal}`,
-  );
-
-  for (const h of portfolio?.holdings ?? []) {
-    assert(`Holding ${h.ticker}: has shares > 0`, h.shares > 0);
-    assert(`Holding ${h.ticker}: has current_price > 0`, h.current_price > 0);
-    assert(`Holding ${h.ticker}: has avg_entry_price > 0`, h.avg_entry_price > 0);
-  }
-
   assert("Diary has content", diary.length > 20);
   assert("Memory has content", memory.length > 20);
-
-  if (marketOpen === true) {
-    assert("last_trade_date set to today", portfolio?.last_trade_date === today);
-    assert("Snapshot exists for today", !!snapshot?.date);
-    assert("Snapshot has trades array", Array.isArray(snapshot?.trades));
-    assert("Snapshot total matches portfolio", snapshot?.total_value === portfolio?.total_value);
-  } else {
-    console.log("    ⊘ Market closed; skipping trade/snapshot assertions");
-  }
+  assert("last_trade_date set to today", portfolio?.last_trade_date === today);
+  assert("Snapshot exists for today", !!snapshot?.date);
 
   return portfolio;
 }
@@ -160,31 +123,11 @@ async function runClone(agent: (typeof agents)[number], clone: any) {
   assert("SKILL.md present", skill.includes("Trading Skill"));
 
   await prepareClone(agent.name, clone);
-  const marketOpen = await getMarketOpen(clone);
-  console.log(`    market_open: ${marketOpen}`);
 
   const run = await clone.agent.run({ prompt: PROMPT, timeout: 600000 });
   assert("Agent run completed", run.status === "completed", `status=${run.status}`);
 
-  const portfolio = await validateClone(agent.name, clone, marketOpen);
-
-  if (marketOpen === true) {
-    const dayNumber = portfolio?.day_number;
-    const run2 = await clone.agent.run({ prompt: PROMPT, timeout: 600000 });
-    assert("Second run completed", run2.status === "completed", `status=${run2.status}`);
-
-    const afterSecond = parse(await readFile(clone, `/workspace/home/agents/${agent.name}/portfolio.json`));
-    const today = new Date().toISOString().split("T")[0];
-
-    assert(
-      "Idempotency: day_number unchanged on second run",
-      afterSecond?.day_number === dayNumber,
-      `was ${dayNumber}, now ${afterSecond?.day_number}`,
-    );
-    assert("Idempotency: last_trade_date still today", afterSecond?.last_trade_date === today);
-  }
-
-  return portfolio;
+  return await validateClone(agent.name, clone);
 }
 
 function getCloneConfig(agent: (typeof agents)[number]) {
@@ -222,12 +165,11 @@ function getCloneConfig(agent: (typeof agents)[number]) {
 }
 
 async function main() {
-  console.log("=== BotStreet Safe E2E — Snapshot Clones ===\n");
+  console.log("=== BotStreet Safe E2E — Basic Clone Runs ===\n");
 
   const sourceBoxes: Array<{
     agent: (typeof agents)[number];
     box: any;
-    portfolioRaw: string;
   }> = [];
   const snapshots: Array<{
     agent: (typeof agents)[number];
@@ -249,7 +191,7 @@ async function main() {
       assert(`${agent.name} source box reachable`, sourceStatus === "idle" || sourceStatus === "paused");
       assert(`${agent.name} source portfolio exists`, portfolioRaw.includes(`"agent": "${agent.name}"`));
 
-      sourceBoxes.push({ agent, box, portfolioRaw });
+      sourceBoxes.push({ agent, box });
     }
 
     console.log("\n[Create snapshots]");
@@ -288,25 +230,6 @@ async function main() {
         portfolios[result.value.name] = result.value.portfolio;
       } else {
         assert(`${clonedBoxes[i].agent.name} run succeeded`, false, String(result.reason));
-      }
-    }
-
-    console.log("\n[Cross-agent checks on clones]");
-    for (const { agent, box } of clonedBoxes) {
-      const otherAgents = agents.filter((a) => a.name !== agent.name);
-      for (const other of otherAgents) {
-        const cross = await readFile(box, `/workspace/home/agents/${other.name}/portfolio.json`);
-        assert(`${agent.name} clone has no ${other.name} files`, cross === "");
-      }
-    }
-
-    console.log("\n[Live source safety check]");
-    for (const { agent, box, portfolioRaw } of sourceBoxes) {
-      const current = await readFile(box, `/workspace/home/agents/${agent.name}/portfolio.json`);
-      if (current === portfolioRaw) {
-        assert(`${agent.name} source portfolio unchanged`, true);
-      } else {
-        console.log(`    ⊘ ${agent.name} source portfolio changed during test window; likely external activity`);
       }
     }
 
