@@ -4,6 +4,8 @@ Three AI agents. $100K each. Real market prices. Who wins?
 
 **[Live Dashboard](https://botstreet.vercel.app)**
 
+![Dashboard](ss.png)
+
 ---
 
 ## What is this?
@@ -19,13 +21,27 @@ Three AI agents (Claude, Gemini, OpenAI) each receive $100,000 in virtual money 
 
 The agents use real market prices from Yahoo Finance but trade with virtual money. A SvelteKit dashboard shows the live leaderboard with portfolio values, holdings, and trade history.
 
+## Agent Server
+
+An agent server is not a web server. There is no app code, no routes, no handlers. Instead, you give it five primitives:
+
+![Agent Server](agentserver.png)
+
+- **No code.** A web server runs your application — routes, handlers, business logic. An agent server has no app code. You give it prompts, tools, and skills. The agent decides what to do.
+
+- **Per tenant.** A web server is multi-tenant — one process serves all users. An agent server is one agent per user. Each gets its own isolated container with its own memory.
+
+- **Lightweight.** A web server is a running process. An agent server sleeps when idle and wakes up instantly. State lives in plain JSON — no database, no cost when idle.
+
+This project is an example of three agent servers running in parallel. Each agent gets its own [Upstash Box](https://upstash.com/docs/box/overall/quickstart) with its own tools, skills, and durable data. Same tools, same skills, different models — competing as portfolio managers.
+
 ## Agents
 
-| Agent      | Model           | Runtime                     |
-| ---------- | --------------- | --------------------------- |
-| **Claude** | Claude Opus 4.6 | Claude Code (Upstash Box)   |
-| **Gemini** | Gemini 3.1 Pro  | OpenCode (Upstash Box)      |
-| **OpenAI** | GPT 5.4 Codex   | Codex (Upstash Box)         |
+| Agent      | Model           | Runtime                   |
+| ---------- | --------------- | ------------------------- |
+| **Claude** | Claude Opus 4.6 | Claude Code (Upstash Box) |
+| **Gemini** | Gemini 3.1 Pro  | OpenCode (Upstash Box)    |
+| **OpenAI** | GPT 5.4 Codex   | Codex (Upstash Box)       |
 
 Each agent runs in its own isolated [Upstash Box](https://upstash.com/docs/box/overall/quickstart) with durable storage. Files persist between runs. No shared state between agents.
 
@@ -69,72 +85,6 @@ All agents share the same TypeScript tools that handle math and validation. Agen
 
 ![Architecture](architecture.png)
 
-### Idempotency
-
-Agents can't double-trade. `snapshot.ts` sets `last_trade_date` after saving, and `trade.ts` rejects trades if `last_trade_date` is today. Running the trigger twice in a day is safe.
-
-## Project Structure
-
-```
-botstreet/
-├── box/                      # Uploaded into each Upstash Box
-│   ├── tools/                #   7 shared trading tools (TypeScript)
-│   └── package.json
-│
-├── skill/
-│   └── SKILL.md              # Agent playbook (→ CLAUDE.md + AGENTS.md + SKILL.md)
-│
-├── setup/                    # One-time setup scripts
-│   ├── init-boxes.ts         #   Create 3 named boxes and upload everything
-│   ├── reset-boxes.ts        #   Backup → delete → recreate → restore
-│   ├── setup-schedules.ts    #   Configure Box Schedule cron for all agents
-│   └── update-tools.ts       #   Re-upload tools + skills to existing boxes
-│
-├── tests/                    # Integration tests
-│   ├── test-phase1.ts        #   Box connectivity + tool validation
-│   ├── test-phase2.ts        #   Single agent end-to-end trade
-│   ├── test-phase3.ts        #   Multi-agent parallel trade
-│   ├── test-skill-autoload.ts#   CLAUDE.md / AGENTS.md auto-load
-│   └── test-skill-discovery.ts#  Skill discovery regression
-│
-└── web/                      # SvelteKit dashboard (Vercel)
-    └── src/
-        ├── routes/
-        │   ├── +page.svelte    #   Leaderboard
-        │   ├── agent/[name]/  #   Agent detail page
-        │   └── api/trigger/   #   GET endpoint to trigger all agents
-        └── lib/server/
-            └── boxes.ts       #   Box SDK data fetching
-```
-
-### What runs where
-
-```
-YOUR MACHINE                          UPSTASH BOX (cloud)
-─────────────                         ────────────────────
-setup/init-boxes.ts ──creates──────>  botstreet-claude  (Claude Opus 4.6)
-                                      botstreet-gemini  (Gemini 3.1 Pro)
-                                      botstreet-openai  (GPT 5.4 Codex)
-
-setup/setup-schedules.ts ──sets───>   Box Schedule: "30 14 * * 1-5"
-                                      (9:30 AM ET, weekdays)
-                                           │
-                                           ▼
-                                      Each box runs autonomously:
-                                      1. Reads CLAUDE.md / AGENTS.md / SKILL.md
-                                      2. Researches market (Yahoo + Brave)
-                                      3. Decides trades (LLM reasoning)
-                                      4. Executes via tools/ (rules enforced)
-                                      5. Saves snapshot + diary + memory
-
-setup/update-tools.ts ──syncs──────>  tools/ + SKILL.md in all 3 boxes
-
-VERCEL                                UPSTASH BOX (cloud)
-──────                                ────────────────────
-web/ dashboard  ──reads─────────────> portfolio.json + history/ from boxes
-GET /api/trigger ──runs────────────>  All 3 agents (manual, same as schedule)
-```
-
 ## Setup
 
 ### Prerequisites
@@ -146,7 +96,7 @@ GET /api/trigger ──runs────────────>  All 3 agents (
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/enesakar/botstreet.git
+git clone https://github.com/upstash/botstreet.git
 cd botstreet
 npm install
 ```
