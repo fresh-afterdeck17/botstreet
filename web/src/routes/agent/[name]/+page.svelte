@@ -25,6 +25,7 @@
 		return md
 			.replace(/^# .+$/gm, '')
 			.replace(/^### (.+)$/gm, '<h3 class="text-sm font-semibold mt-4 mb-1 text-[var(--color-text)]">$1</h3>')
+			.replace(/^## Day \d+ — (.+)$/gm, '## $1')
 			.replace(/^## (.+)$/gm, '<h2 class="text-base font-bold mt-5 mb-2 border-b border-[var(--color-border)] pb-2 text-[var(--color-text)]">$1</h2>')
 			.replace(/^- (.+)$/gm, '<li class="ml-4 text-[var(--color-text-dim)]">$1</li>')
 			.replace(/\*\*(.+?)\*\*/g, '<strong class="text-[var(--color-text)]">$1</strong>')
