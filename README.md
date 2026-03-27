@@ -24,7 +24,7 @@ The agents use real market prices from Yahoo Finance but trade with virtual mone
 | Agent      | Model           | Runtime                     |
 | ---------- | --------------- | --------------------------- |
 | **Claude** | Claude Opus 4.6 | Claude Code (Upstash Box)   |
-| **Gemini** | Gemini 3.1 Pro  | Vercel AI SDK (Upstash Box) |
+| **Gemini** | Gemini 3.1 Pro  | OpenCode (Upstash Box)      |
 | **OpenAI** | GPT 5.4 Codex   | Codex (Upstash Box)         |
 
 Each agent runs in its own isolated [Upstash Box](https://upstash.com/docs/box/overall/quickstart) with durable storage. Files persist between runs. No shared state between agents.
@@ -62,7 +62,6 @@ All agents share the same TypeScript tools that handle math and validation. Agen
 - **Scheduling**: [Upstash Box Schedule](https://upstash.com/docs/box/overall/schedules)
 - **Price data**: Yahoo Finance (chart API, no key needed)
 - **Web search**: Brave Search API
-- **Gemini runtime**: [Vercel AI SDK](https://ai-sdk.dev) with `@ai-sdk/google`
 - **Dashboard**: SvelteKit + Tailwind CSS
 - **Hosting**: Vercel
 
@@ -80,7 +79,6 @@ Agents can't double-trade. `snapshot.ts` sets `last_trade_date` after saving, an
 botstreet/
 ├── box/                      # Uploaded into each Upstash Box
 │   ├── tools/                #   7 shared trading tools (TypeScript)
-│   ├── agent-gemini.ts       #   Custom Gemini agent (AI SDK)
 │   └── package.json
 │
 ├── skill/
@@ -143,7 +141,7 @@ GET /api/trigger ──runs────────────>  All 3 agents (
 
 - Node.js 20+
 - [Upstash](https://console.upstash.com) account with Box API key
-- API keys: Anthropic, OpenAI, Google AI, Brave Search
+- API keys: Anthropic, OpenAI, Brave Search
 
 ### 1. Clone and install
 
@@ -151,7 +149,6 @@ GET /api/trigger ──runs────────────>  All 3 agents (
 git clone https://github.com/enesakar/botstreet.git
 cd botstreet
 npm install
-cd box && npm install && cd ..
 ```
 
 ### 2. Configure environment
@@ -166,7 +163,6 @@ Required keys:
 - `UPSTASH_BOX_API_KEY` -- Upstash Box
 - `ANTHROPIC_API_KEY` -- Claude
 - `OPENAI_API_KEY` -- OpenAI Codex
-- `GOOGLE_API_KEY` -- Gemini (Google AI Studio)
 - `BRAVE_API_KEY` -- Web search
 
 ### 3. Create boxes

@@ -3,6 +3,7 @@ import { Box } from "@upstash/box";
 import { writeFileSync, readFileSync, existsSync, mkdirSync } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { getBoxByName, isBoxNotFoundError } from "./box-utils.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const BACKUP_DIR = path.join(__dirname, "..", ".backups");
@@ -84,7 +85,7 @@ async function restoreFromDisk(backupPath: string) {
   const backups = loadBackupFromDisk(backupPath);
   for (const backup of backups) {
     try {
-      const box = await Box.getByName(`botstreet-${backup.agent}`);
+      const box = await getBoxByName(`botstreet-${backup.agent}`);
       await restoreAgent(box, backup);
     } catch (e) {
       console.error(`  Failed to restore ${backup.agent}:`, e);
@@ -109,10 +110,15 @@ async function main() {
 
   for (let i = 0; i < AGENT_NAMES.length; i++) {
     try {
-      const box = await Box.getByName(BOX_NAMES[i]);
+      const box = await getBoxByName(BOX_NAMES[i]);
       backups.push(await backupAgent(box, AGENT_NAMES[i]));
-    } catch {
-      console.log(`  ${AGENT_NAMES[i]}: no existing box found, skipping`);
+    } catch (error) {
+      if (isBoxNotFoundError(error, BOX_NAMES[i])) {
+        console.log(`  ${AGENT_NAMES[i]}: no existing box found, skipping`);
+        continue;
+      }
+
+      throw error;
     }
   }
 
@@ -127,11 +133,16 @@ async function main() {
   console.log("\n[2/4 Delete]");
   for (const name of BOX_NAMES) {
     try {
-      const box = await Box.getByName(name);
+      const box = await getBoxByName(name);
       await box.delete();
       console.log(`  Deleted ${name}`);
-    } catch {
-      console.log(`  ${name}: not found, skipping`);
+    } catch (error) {
+      if (isBoxNotFoundError(error, name)) {
+        console.log(`  ${name}: not found, skipping`);
+        continue;
+      }
+
+      throw error;
     }
   }
 
@@ -148,6 +159,11 @@ async function main() {
   } else {
     console.log("  No backup to restore.");
   }
+
+  // ── 6. Re-apply schedules ──
+  console.log("\n[5/5 Schedules]");
+  const { setupSchedules } = await import("./setup-schedules.js");
+  await setupSchedules();
 
   console.log("\n=== Reset complete ===");
 }

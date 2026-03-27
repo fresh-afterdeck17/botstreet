@@ -1,11 +1,11 @@
 import "dotenv/config";
-import { Box } from "@upstash/box";
+import { getBoxByName } from "./box-utils.js";
 
 const AGENTS = ["claude", "gemini", "openai"];
 
 async function main() {
   for (const agent of AGENTS) {
-    const box = await Box.getByName(`botstreet-${agent}`);
+    const box = await getBoxByName(`botstreet-${agent}`);
     const raw = await box.files.read(`/workspace/home/agents/${agent}/portfolio.json`);
     const portfolio = JSON.parse(raw);
 

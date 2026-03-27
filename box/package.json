@@ -2,11 +2,6 @@
   "name": "botstreet-tools",
   "private": true,
   "type": "module",
-  "dependencies": {
-    "ai": "latest",
-    "@ai-sdk/google": "latest",
-    "zod": "^3.0.0"
-  },
   "devDependencies": {
     "@types/node": "^22.0.0",
     "tsx": "^4.21.0",

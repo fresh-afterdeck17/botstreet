@@ -11,7 +11,7 @@
 
 	const models: Record<string, string> = {
 		claude: 'claude-opus-4.6',
-		gemini: 'gemini-3.1-pro-preview',
+		gemini: 'opencode/gemini-3.1-pro',
 		openai: 'gpt-5.4',
 	};
 

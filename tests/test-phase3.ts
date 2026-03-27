@@ -1,12 +1,12 @@
 import "dotenv/config";
-import { Box } from "@upstash/box";
+import { getBoxByName } from "../setup/box-utils.js";
 
 const PROMPT = "trade";
 
 const agents = [
-  { name: "claude", boxName: "botstreet-claude", customAgent: false },
-  { name: "gemini", boxName: "botstreet-gemini", customAgent: true },
-  { name: "openai", boxName: "botstreet-openai", customAgent: false },
+  { name: "claude", boxName: "botstreet-claude" },
+  { name: "gemini", boxName: "botstreet-gemini" },
+  { name: "openai", boxName: "botstreet-openai" },
 ];
 
 let passed = 0;
@@ -103,7 +103,7 @@ async function main() {
   console.log("[Pre-flight]");
   const boxes: Record<string, any> = {};
   for (const agent of agents) {
-    const box = await Box.getByName(agent.boxName);
+    const box = await getBoxByName(agent.boxName);
     boxes[agent.name] = box;
 
     const skill = await readFile(box, "/workspace/home/SKILL.md");
@@ -119,19 +119,10 @@ async function main() {
       console.log(`  Starting ${agent.name}...`);
       const box = boxes[agent.name];
 
-      if (agent.customAgent) {
-        const run = await box.exec.command(
-          "cd /workspace/home && export $(cat .env | xargs) && npx tsx agent-gemini.ts 2>&1",
-        );
-        const elapsed = ((Date.now() - startTime) / 1000).toFixed(0);
-        console.log(`  ${agent.name} done (${elapsed}s, status: ${run.status})`);
-        return { name: agent.name, status: run.status };
-      } else {
-        const run = await box.agent.run({ prompt: PROMPT, timeout: 600000 });
-        const elapsed = ((Date.now() - startTime) / 1000).toFixed(0);
-        console.log(`  ${agent.name} done (${elapsed}s, status: ${run.status}, cost: $${run.cost?.totalUsd ?? "?"})`);
-        return { name: agent.name, status: run.status, cost: run.cost?.totalUsd };
-      }
+      const run = await box.agent.run({ prompt: PROMPT, timeout: 600000 });
+      const elapsed = ((Date.now() - startTime) / 1000).toFixed(0);
+      console.log(`  ${agent.name} done (${elapsed}s, status: ${run.status}, cost: $${run.cost?.totalUsd ?? "?"})`);
+      return { name: agent.name, status: run.status, cost: run.cost?.totalUsd };
     }),
   );
 

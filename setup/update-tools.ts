@@ -3,6 +3,7 @@ import { Box } from "@upstash/box";
 import { readdirSync } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { getBoxByName } from "./box-utils.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -17,7 +18,7 @@ const target = process.argv[2];
 
 async function updateBox(name: string, boxName: string) {
   console.log(`Updating ${name} (${boxName})...`);
-  const box = await Box.getByName(boxName);
+  const box = await getBoxByName(boxName);
 
   // Upload all tool files
   const toolsDir = path.join(ROOT, "box/tools");
@@ -41,14 +42,6 @@ async function updateBox(name: string, boxName: string) {
     { path: skillPath, destination: "/workspace/home/SKILL.md" },
   ]);
   console.log(`  Uploaded CLAUDE.md + AGENTS.md + SKILL.md`);
-
-  // Upload custom agent script for Gemini
-  if (name === "gemini") {
-    await box.files.upload([
-      { path: path.join(ROOT, "box/agent-gemini.ts"), destination: "/workspace/home/agent-gemini.ts" },
-    ]);
-    console.log(`  Uploaded agent-gemini.ts`);
-  }
 
   // Patch portfolio.json to add last_trade_date if missing
   try {

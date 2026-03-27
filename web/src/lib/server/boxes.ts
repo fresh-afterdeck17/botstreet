@@ -1,5 +1,4 @@
-import { Box } from '@upstash/box';
-import { env } from '$env/dynamic/private';
+import { getBoxByName } from '$lib/server/box.js';
 import type { Portfolio, HistorySnapshot, MarketQuote } from '$lib/types.js';
 
 const AGENTS = [
@@ -8,7 +7,7 @@ const AGENTS = [
 	{ name: 'openai', boxName: 'botstreet-openai' }
 ] as const;
 
-async function readJson<T>(box: Box, path: string): Promise<T | null> {
+async function readJson<T>(box: Awaited<ReturnType<typeof getBoxByName>>, path: string): Promise<T | null> {
 	try {
 		const raw = await box.files.read(path);
 		return JSON.parse(raw) as T;
@@ -21,7 +20,7 @@ export async function fetchPortfolios(): Promise<Portfolio[]> {
 	const portfolios = await Promise.all(
 		AGENTS.map(async (agent) => {
 			try {
-				const box = await Box.getByName(agent.boxName, { apiKey: env.UPSTASH_BOX_API_KEY });
+				const box = await getBoxByName(agent.boxName);
 				return await readJson<Portfolio>(box, `/workspace/home/agents/${agent.name}/portfolio.json`);
 			} catch (e) {
 				console.error(`[fetchPortfolios] ${agent.name} failed:`, e);
@@ -74,7 +73,7 @@ export async function fetchHistory(agentName: string): Promise<HistorySnapshot[]
 	if (!agent) return [];
 
 	try {
-		const box = await Box.getByName(agent.boxName, { apiKey: env.UPSTASH_BOX_API_KEY });
+		const box = await getBoxByName(agent.boxName);
 		const files = await box.files.list(`/workspace/home/agents/${agentName}/history`);
 		const jsonFiles = files
 			.filter((f: any) => f.name?.endsWith('.json') || f.path?.endsWith('.json'))
@@ -94,7 +93,7 @@ export async function fetchDiary(agentName: string): Promise<string> {
 	if (!agent) return '';
 
 	try {
-		const box = await Box.getByName(agent.boxName, { apiKey: env.UPSTASH_BOX_API_KEY });
+		const box = await getBoxByName(agent.boxName);
 		return await box.files.read(`/workspace/home/agents/${agentName}/diary.md`);
 	} catch {
 		return '';

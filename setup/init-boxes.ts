@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { Box, Agent, ClaudeCode, OpenAICodex } from "@upstash/box";
+import { Box, Agent, BoxApiKey, ClaudeCode, OpenAICodex, OpenCodeModel } from "@upstash/box";
 import { readdirSync } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -10,7 +10,6 @@ const ROOT = path.resolve(__dirname, "..");
 interface AgentDef {
   name: string;
   agent?: any;
-  customAgent?: boolean;
 }
 
 const agents: AgentDef[] = [
@@ -24,7 +23,11 @@ const agents: AgentDef[] = [
   },
   {
     name: "gemini",
-    customAgent: true,
+    agent: {
+      provider: Agent.OpenCode,
+      model: OpenCodeModel.Zen_Gemini_3_1_Pro,
+      apiKey: BoxApiKey.UpstashKey,
+    },
   },
   {
     name: "openai",
@@ -62,7 +65,10 @@ async function setup() {
   for (const config of agents) {
     console.log(`Creating box for ${config.name}...`);
 
-    const boxConfig: any = { runtime: "node", name: `botstreet-${config.name}` };
+    const boxConfig: any = {
+      runtime: "node",
+      name: `botstreet-${config.name}`,
+    };
     if (config.agent) {
       boxConfig.agent = config.agent;
     }
@@ -96,8 +102,8 @@ async function setup() {
 
     // Upload SKILL.md as the auto-loaded config file for each agent type:
     // - CLAUDE.md for Claude Code agents
-    // - AGENTS.md for OpenAI Codex agents
-    // - SKILL.md for Gemini (reads it directly via readFileSync)
+    // - AGENTS.md for OpenAI Codex/OpenCode agents
+    // - SKILL.md retained for compatibility and direct reads
     const skillPath = path.join(ROOT, "skill/SKILL.md");
     await box.files.upload([
       { path: skillPath, destination: "/workspace/home/CLAUDE.md" },
@@ -105,17 +111,6 @@ async function setup() {
       { path: skillPath, destination: "/workspace/home/SKILL.md" },
     ]);
     console.log(`  Uploaded CLAUDE.md + AGENTS.md + SKILL.md`);
-
-    // Upload custom agent script for Gemini
-    if (config.customAgent) {
-      await box.files.upload([
-        {
-          path: path.join(ROOT, "box/agent-gemini.ts"),
-          destination: "/workspace/home/agent-gemini.ts",
-        },
-      ]);
-      console.log(`  Uploaded agent-gemini.ts`);
-    }
 
     // Write initial portfolio, diary, memory
     await box.files.write({
@@ -144,11 +139,6 @@ async function setup() {
     const envLines: string[] = [];
     if (process.env.BRAVE_API_KEY)
       envLines.push(`BRAVE_API_KEY=${process.env.BRAVE_API_KEY}`);
-    if (config.customAgent && process.env.GOOGLE_API_KEY) {
-      envLines.push(
-        `GOOGLE_GENERATIVE_AI_API_KEY=${process.env.GOOGLE_API_KEY}`,
-      );
-    }
     if (envLines.length > 0) {
       await box.files.write({
         path: "/workspace/home/.env",
@@ -165,13 +155,16 @@ async function setup() {
     console.log(`  ✓ ${config.name} ready\n`);
   }
 
-  console.log("=== Setup complete. Boxes named: botstreet-claude, botstreet-gemini, botstreet-openai ===\n");
+  console.log(
+    "=== Setup complete. Boxes named: botstreet-claude, botstreet-gemini, botstreet-openai ===\n",
+  );
 }
 
 export { setup };
 
 // Run directly if this is the main module
-const isMain = import.meta.url === `file://${process.argv[1]}` ||
+const isMain =
+  import.meta.url === `file://${process.argv[1]}` ||
   import.meta.url === new URL(process.argv[1], "file://").href;
 if (isMain) {
   setup().catch((err) => {

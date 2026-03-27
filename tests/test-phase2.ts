@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { Box } from "@upstash/box";
+import { getBoxByName } from "../setup/box-utils.js";
 
 const BOX_NAME = "botstreet-claude";
 const AGENT = "claude";
@@ -42,7 +42,7 @@ async function runCmd(box: any, cmd: string): Promise<any> {
 async function main() {
   console.log("=== BotStreet Phase 2 Tests — Single Agent End-to-End ===\n");
 
-  const box = await Box.getByName(BOX_NAME);
+  const box = await getBoxByName(BOX_NAME);
   console.log(`Box: ${BOX_NAME}\n`);
 
   // ── Pre-flight ──
