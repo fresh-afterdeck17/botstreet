@@ -9,5 +9,14 @@ export async function getBoxByName(name: string): Promise<Box> {
 		throw new Error(`Box not found by name: ${name}`);
 	}
 
-	return await Box.get(match.id, { apiKey: env.UPSTASH_BOX_API_KEY });
+	const box = await Box.get(match.id, { apiKey: env.UPSTASH_BOX_API_KEY });
+
+	// Workaround: wake idle boxes before file access (upstash/box#110)
+	try {
+		await box.exec.command('pwd');
+	} catch {
+		// ignore wake-up errors
+	}
+
+	return box;
 }

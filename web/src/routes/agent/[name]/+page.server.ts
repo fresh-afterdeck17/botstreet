@@ -17,9 +17,10 @@ export const load: PageServerLoad = async ({ params }) => {
 	const portfolio = await refreshPortfolioPrices(rawPortfolio);
 
 	// Collect all trades from history
+	console.log(`[${name}] history snapshots: ${history.length}, trades per snapshot:`, history.map(s => ({ date: s.date, trades: s.trades?.length ?? 0, keys: Object.keys(s) })));
 	const allTrades = history
 		.flatMap((s) =>
-			s.trades.map((t) => ({
+			(s.trades ?? []).map((t) => ({
 				...t,
 				date: s.date,
 				day_number: s.day_number

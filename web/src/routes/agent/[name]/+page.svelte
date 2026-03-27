@@ -11,7 +11,20 @@
 	};
 	const c = agentColors[p.agent] ?? agentColors.claude;
 
-	let activeTab: 'memory' | 'diary' = $state('memory');
+	let activeTab: 'memory' | 'diary' | 'transactions' = $state('memory');
+
+	// Group trades by date (newest first)
+	const tradesByDate: { date: string; trades: typeof data.trades }[] = [];
+	{
+		const map = new Map<string, typeof data.trades>();
+		for (const t of data.trades) {
+			if (!map.has(t.date)) map.set(t.date, []);
+			map.get(t.date)!.push(t);
+		}
+		for (const [date, trades] of map) {
+			tradesByDate.push({ date, trades });
+		}
+	}
 
 	function fmt(n: number): string {
 		return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -109,6 +122,13 @@
 		>
 			Diary
 		</button>
+		<button
+			class="px-6 py-3.5 font-mono text-[12px] uppercase tracking-widest transition-colors {activeTab === 'transactions' ? 'border-b-2 text-[var(--color-text)]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-dim)]'}"
+			style={activeTab === 'transactions' ? `border-color: ${c.accent}` : ''}
+			onclick={() => activeTab = 'transactions'}
+		>
+			Transactions
+		</button>
 	</div>
 
 	<!-- Tab Content -->
@@ -121,13 +141,45 @@
 			{:else}
 				<p class="text-sm text-[var(--color-text-muted)]">No memory entries yet</p>
 			{/if}
-		{:else}
+		{:else if activeTab === 'diary'}
 			{#if data.diary && data.diary.length > 20}
 				<div class="text-sm leading-relaxed text-[var(--color-text-dim)]">
 					{@html renderMarkdown(data.diary)}
 				</div>
 			{:else}
 				<p class="text-sm text-[var(--color-text-muted)]">No diary entries yet</p>
+			{/if}
+		{:else}
+			{#if tradesByDate.length === 0}
+				<p class="text-sm text-[var(--color-text-muted)]">No transactions yet</p>
+			{:else}
+				{#each tradesByDate as group}
+					<div class="mb-6 last:mb-0">
+						<h3 class="mb-3 text-base font-bold text-[var(--color-text)] border-b border-[var(--color-border)] pb-2">{group.date}</h3>
+						<div class="space-y-2">
+							{#each group.trades as trade}
+								<div class="flex items-center justify-between rounded-lg border border-[var(--color-border)] px-4 py-3">
+									<div class="flex items-center gap-3">
+										<span
+											class="rounded px-2 py-0.5 font-mono text-[11px] font-semibold uppercase"
+											style="background: {trade.action === 'buy' ? 'var(--color-up-bg)' : 'var(--color-down-bg)'}; color: {trade.action === 'buy' ? 'var(--color-up)' : 'var(--color-down)'}"
+										>
+											{trade.action}
+										</span>
+										<span class="font-mono text-[13px] font-semibold text-[var(--color-text)]">{trade.ticker}</span>
+										{#if trade.reason}
+											<span class="text-xs text-[var(--color-text-muted)]">{trade.reason}</span>
+										{/if}
+									</div>
+									<div class="text-right">
+										<div class="font-mono text-[13px] text-[var(--color-text-dim)]">${fmt(trade.amount)}</div>
+										<div class="font-mono text-[11px] text-[var(--color-text-muted)]">@ ${fmt(trade.price)}</div>
+									</div>
+								</div>
+							{/each}
+						</div>
+					</div>
+				{/each}
 			{/if}
 		{/if}
 	</div>
