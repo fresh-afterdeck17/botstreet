@@ -83,6 +83,7 @@ export interface Portfolio {
   start_date: string;
   last_action: LastAction | null;
   last_trade_date: string | null;
+  last_run_date: string | null;
 }
 
 export interface TradeRecord {

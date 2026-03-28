@@ -43,17 +43,25 @@ async function updateBox(name: string, boxName: string) {
   ]);
   console.log(`  Uploaded CLAUDE.md + AGENTS.md + SKILL.md`);
 
-  // Patch portfolio.json to add last_trade_date if missing
+  // Patch portfolio.json to add missing fields
   try {
     const portfolioRaw = await box.files.read(`/workspace/home/agents/${name}/portfolio.json`);
     const portfolio = JSON.parse(portfolioRaw);
+    let patched = false;
     if (!("last_trade_date" in portfolio)) {
       portfolio.last_trade_date = null;
+      patched = true;
+    }
+    if (!("last_run_date" in portfolio)) {
+      portfolio.last_run_date = null;
+      patched = true;
+    }
+    if (patched) {
       await box.files.write({
         path: `/workspace/home/agents/${name}/portfolio.json`,
         content: JSON.stringify(portfolio, null, 2),
       });
-      console.log(`  Patched portfolio.json with last_trade_date`);
+      console.log(`  Patched portfolio.json with missing fields`);
     }
   } catch {
     console.log(`  Warning: could not read/patch portfolio.json`);

@@ -35,11 +35,9 @@ Refresh all holding prices to current market values:
 npx tsx /workspace/home/tools/portfolio.ts update_prices <agent>
 ```
 
-**Idempotency:** Check the `last_trade_date` field in the portfolio output. If it matches today's date, you have already completed today's run — **stop immediately** without making any changes to diary, memory, or portfolio. Output a short message and exit.
+**Idempotency:** Check the `last_run_date` field in the output. If it matches today's date, you have already completed today's run — **stop immediately** without making any changes. Output a short message and exit.
 
-**Weekend/Holiday Check:** If `last_trade_date` is not today, check the `market_open` field in the price output. If timestamps are more than 24 hours old, the market is likely closed (weekend or holiday). **Do NOT trade when the market is closed.** Skip trading and snapshot entirely. You may still do research and update your diary and memory.
-
-**Locking the day:** At the very end of your run (after all diary/memory updates), always run `npx tsx /workspace/home/tools/portfolio.ts mark_done <agent>` to lock the day and prevent duplicate runs. Do this whether you traded or not.
+**Weekend/Holiday Check:** If `last_run_date` is not today, check the `market_open` field in the price output. If timestamps are more than 24 hours old, the market is likely closed (weekend or holiday). **Do NOT trade when the market is closed.** Skip trading and snapshot entirely. You may still do research and update your diary and memory.
 
 ### Step 2: Review Portfolio
 

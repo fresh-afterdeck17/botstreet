@@ -34,8 +34,8 @@ export const GET: RequestHandler = async () => {
 					);
 					const portfolio = JSON.parse(raw);
 					const today = new Date().toISOString().split('T')[0];
-					if (portfolio.last_trade_date === today) {
-						send(agent.name, 'skipped', { reason: 'already traded today' });
+					if (portfolio.last_run_date === today) {
+						send(agent.name, 'skipped', { reason: 'already ran today' });
 						return;
 					}
 				} catch {
