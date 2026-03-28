@@ -125,6 +125,7 @@ async function executeTrade(
       summary: `Bought $${amount} of ${ticker} at $${round(price, 2)}${reason ? `. ${reason}` : ""}`,
       timestamp: new Date().toISOString(),
     };
+    portfolio.last_trade_date = today;
 
     writePortfolio(agent, portfolio);
 
@@ -184,6 +185,7 @@ async function executeTrade(
       summary: `Sold $${amount} of ${ticker} at $${round(price, 2)}${reason ? `. ${reason}` : ""}`,
       timestamp: new Date().toISOString(),
     };
+    portfolio.last_trade_date = today;
 
     writePortfolio(agent, portfolio);
 

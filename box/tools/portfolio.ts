@@ -65,7 +65,7 @@ if (process.argv[1]?.endsWith("portfolio.ts")) {
   const agent = args[1];
 
   if (!subcommand || !agent) {
-    console.log(JSON.stringify({ error: "usage: portfolio.ts <get|update_prices> <agent>" }));
+    console.log(JSON.stringify({ error: "usage: portfolio.ts <get|update_prices|mark_done> <agent>" }));
     process.exit(1);
   }
 
@@ -76,8 +76,14 @@ if (process.argv[1]?.endsWith("portfolio.ts")) {
     } else if (subcommand === "update_prices") {
       const portfolio = await updatePortfolioPrices(agent);
       console.log(JSON.stringify(portfolio, null, 2));
+    } else if (subcommand === "mark_done") {
+      const portfolio = readPortfolio(agent);
+      const today = new Date().toISOString().split("T")[0];
+      portfolio.last_trade_date = today;
+      writePortfolio(agent, portfolio);
+      console.log(JSON.stringify({ success: true, message: `marked ${today} as done — no further trades allowed today` }));
     } else {
-      console.log(JSON.stringify({ error: "unknown subcommand. use: get | update_prices" }));
+      console.log(JSON.stringify({ error: "unknown subcommand. use: get | update_prices | mark_done" }));
       process.exit(1);
     }
   } catch (e: any) {
