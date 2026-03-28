@@ -6,7 +6,8 @@
     "setup": "tsx setup/init-boxes.ts",
     "trigger": "tsx trigger/run-daily.ts",
     "snapshot": "tsx setup/save-snapshots.ts",
-    "test:e2e:safe": "tsx tests/test-e2e-fork.ts"
+    "test:e2e:safe": "tsx tests/test-e2e-fork.ts",
+    "sync": "tsx setup/update-tools.ts"
   },
   "dependencies": {
     "@upstash/box": "^0.1.30",
