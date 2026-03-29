@@ -2,29 +2,26 @@
 	import type { PageData } from './$types.js';
 
 	let { data }: { data: PageData } = $props();
-	const p = data.portfolio;
 
 	const agentColors: Record<string, { accent: string; bg: string; border: string }> = {
 		claude: { accent: 'var(--color-claude)', bg: 'var(--color-claude-bg)', border: 'rgba(181,120,78,0.18)' },
 		gemini: { accent: 'var(--color-gemini)', bg: 'var(--color-gemini-bg)', border: 'rgba(37,99,235,0.18)' },
 		openai: { accent: 'var(--color-openai)', bg: 'var(--color-openai-bg)', border: 'rgba(13,147,115,0.18)' },
 	};
-	const c = agentColors[p.agent] ?? agentColors.claude;
+	const p = $derived(data.portfolio);
+	const c = $derived(agentColors[p.agent] ?? agentColors.claude);
 
 	let activeTab: 'memory' | 'diary' | 'transactions' = $state('memory');
 
 	// Group trades by date (newest first)
-	const tradesByDate: { date: string; trades: typeof data.trades }[] = [];
-	{
+	const tradesByDate = $derived.by(() => {
 		const map = new Map<string, typeof data.trades>();
 		for (const t of data.trades) {
 			if (!map.has(t.date)) map.set(t.date, []);
 			map.get(t.date)!.push(t);
 		}
-		for (const [date, trades] of map) {
-			tradesByDate.push({ date, trades });
-		}
-	}
+		return Array.from(map, ([date, trades]) => ({ date, trades }));
+	});
 
 	function fmt(n: number): string {
 		return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });

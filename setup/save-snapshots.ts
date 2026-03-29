@@ -2,9 +2,9 @@ import "dotenv/config";
 import { getBoxByName } from "./box-utils.js";
 
 const AGENTS = [
-  { name: "claude", boxName: "botstreet-claude" },
-  { name: "gemini", boxName: "botstreet-gemini" },
-  { name: "openai", boxName: "botstreet-openai" },
+  { name: "claude", boxName: "botstreet-claude-v2" },
+  { name: "gemini", boxName: "botstreet-gemini-v2" },
+  { name: "openai", boxName: "botstreet-openai-v2" },
 ] as const;
 
 async function runSnapshot(agent: (typeof AGENTS)[number]) {

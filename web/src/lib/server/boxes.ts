@@ -3,12 +3,14 @@ import { getOrSetCache } from '$lib/server/cache.js';
 import type { Portfolio, HistorySnapshot, MarketQuote } from '$lib/types.js';
 
 const AGENTS = [
-	{ name: 'claude', boxName: 'botstreet-claude' },
-	{ name: 'gemini', boxName: 'botstreet-gemini' },
-	{ name: 'openai', boxName: 'botstreet-openai' }
+	{ name: 'claude', boxName: 'botstreet-claude-v2' },
+	{ name: 'gemini', boxName: 'botstreet-gemini-v2' },
+	{ name: 'openai', boxName: 'botstreet-openai-v2' }
 ] as const;
 
 const HOMEPAGE_CACHE_TTL_MS = 30 * 1000;
+const BOX_ROOT = '/workspace/home';
+const DATA_DIR = `${BOX_ROOT}/data`;
 
 async function readJson<T>(box: Awaited<ReturnType<typeof getBoxByName>>, path: string): Promise<T | null> {
 	try {
@@ -24,7 +26,7 @@ export async function fetchPortfolios(): Promise<Portfolio[]> {
 		AGENTS.map(async (agent) => {
 			try {
 				const box = await getBoxByName(agent.boxName);
-				return await readJson<Portfolio>(box, `/workspace/home/agents/${agent.name}/portfolio.json`);
+				return await readJson<Portfolio>(box, `${DATA_DIR}/portfolio.json`);
 			} catch (e) {
 				console.error(`[fetchPortfolios] ${agent.name} failed:`, e);
 				return null;
@@ -77,7 +79,7 @@ export async function fetchHistory(agentName: string): Promise<HistorySnapshot[]
 
 	try {
 		const box = await getBoxByName(agent.boxName);
-		const files = await box.files.list(`/workspace/home/agents/${agentName}/history`);
+		const files = await box.files.list(`${DATA_DIR}/history`);
 		const jsonFiles = files
 			.filter((f: any) => f.name?.endsWith('.json') || f.path?.endsWith('.json'))
 			.sort((a: any, b: any) => (a.path ?? a.name).localeCompare(b.path ?? b.name));
@@ -97,7 +99,7 @@ export async function fetchDiary(agentName: string): Promise<string> {
 
 	try {
 		const box = await getBoxByName(agent.boxName);
-		return await box.files.read(`/workspace/home/agents/${agentName}/diary.md`);
+		return (await box.files.read(`${DATA_DIR}/diary.md`)) ?? '';
 	} catch {
 		return '';
 	}
@@ -109,7 +111,7 @@ export async function fetchMemory(agentName: string): Promise<string> {
 
 	try {
 		const box = await getBoxByName(agent.boxName);
-		return await box.files.read(`/workspace/home/agents/${agentName}/memory.md`);
+		return (await box.files.read(`${DATA_DIR}/memory.md`)) ?? '';
 	} catch {
 		return '';
 	}

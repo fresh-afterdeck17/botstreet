@@ -5,9 +5,9 @@ import { getBoxByName } from "./box-utils.js";
 const CRON = "30 14 * * 1-5";
 
 const agents = [
-  { name: "claude", boxName: "botstreet-claude" },
-  { name: "gemini", boxName: "botstreet-gemini" },
-  { name: "openai", boxName: "botstreet-openai" },
+  { name: "claude", boxName: "botstreet-claude-v2" },
+  { name: "gemini", boxName: "botstreet-gemini-v2" },
+  { name: "openai", boxName: "botstreet-openai-v2" },
 ];
 
 async function setupSchedules() {

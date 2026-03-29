@@ -6,6 +6,7 @@ import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
+const BOX_NAME_SUFFIX = "-v2";
 
 interface AgentDef {
   name: string;
@@ -52,7 +53,7 @@ function initialPortfolio(agentName: string): string {
       day_number: 0,
       start_date: new Date().toISOString().split("T")[0],
       last_action: null,
-      last_trade_date: null,
+      last_run_date: null,
     },
     null,
     2,
@@ -67,7 +68,7 @@ async function setup() {
 
     const boxConfig: any = {
       runtime: "node",
-      name: `botstreet-${config.name}`,
+      name: `botstreet-${config.name}${BOX_NAME_SUFFIX}`,
     };
     if (config.agent) {
       boxConfig.agent = config.agent;
@@ -100,37 +101,38 @@ async function setup() {
     );
     console.log(`  Uploaded ${toolFiles.length} tool files`);
 
-    // Upload SKILL.md as the auto-loaded config file for each agent type:
+    // Upload the canonical skill file plus the auto-loaded root config files:
     // - CLAUDE.md for Claude Code agents
     // - AGENTS.md for OpenAI Codex/OpenCode agents
     // - SKILL.md retained for compatibility and direct reads
     const skillPath = path.join(ROOT, "skill/SKILL.md");
     await box.files.upload([
+      { path: skillPath, destination: "/workspace/home/skills/trade/SKILL.md" },
       { path: skillPath, destination: "/workspace/home/CLAUDE.md" },
       { path: skillPath, destination: "/workspace/home/AGENTS.md" },
       { path: skillPath, destination: "/workspace/home/SKILL.md" },
     ]);
-    console.log(`  Uploaded CLAUDE.md + AGENTS.md + SKILL.md`);
+    console.log(`  Uploaded skills/trade/SKILL.md + root config files`);
 
     // Write initial portfolio, diary, memory
     await box.files.write({
-      path: `/workspace/home/agents/${config.name}/portfolio.json`,
+      path: `/workspace/home/data/portfolio.json`,
       content: initialPortfolio(config.name),
     });
     await box.files.write({
-      path: `/workspace/home/agents/${config.name}/diary.md`,
+      path: `/workspace/home/data/diary.md`,
       content: "# Trading Diary\n",
     });
     await box.files.write({
-      path: `/workspace/home/agents/${config.name}/memory.md`,
+      path: `/workspace/home/data/memory.md`,
       content: "# Trading Memory\n",
     });
     await box.files.write({
-      path: `/workspace/home/agents/${config.name}/today_trades.json`,
+      path: `/workspace/home/data/today_trades.json`,
       content: "[]",
     });
     await box.files.write({
-      path: `/workspace/home/agents/${config.name}/history/.gitkeep`,
+      path: `/workspace/home/data/history/.gitkeep`,
       content: "",
     });
     console.log(`  Initialized agent files`);
@@ -156,7 +158,7 @@ async function setup() {
   }
 
   console.log(
-    "=== Setup complete. Boxes named: botstreet-claude, botstreet-gemini, botstreet-openai ===\n",
+    "=== Setup complete. Boxes named: botstreet-claude-v2, botstreet-gemini-v2, botstreet-openai-v2 ===\n",
   );
 }
 

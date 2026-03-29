@@ -4,9 +4,10 @@
   "type": "module",
   "scripts": {
     "setup": "tsx setup/init-boxes.ts",
+    "migrate:flat": "tsx setup/migrate-flat-layout.ts",
     "trigger": "tsx trigger/run-daily.ts",
     "snapshot": "tsx setup/save-snapshots.ts",
-    "test:e2e:safe": "tsx tests/test-e2e-fork.ts",
+    "test:e2e": "tsx tests/test-agents-e2e.ts",
     "sync": "tsx setup/update-tools.ts"
   },
   "dependencies": {

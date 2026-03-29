@@ -5,35 +5,27 @@ import { readPortfolio, writePortfolio } from "./portfolio.js";
 import { round, todayTradesPath } from "./types.js";
 import type { TradeResult, TradeRecord } from "./types.js";
 
-function readTodayTrades(agent: string): TradeRecord[] {
+function readTodayTrades(): TradeRecord[] {
   try {
-    const raw = readFileSync(todayTradesPath(agent), "utf-8");
+    const raw = readFileSync(todayTradesPath(), "utf-8");
     return JSON.parse(raw) as TradeRecord[];
   } catch {
     return [];
   }
 }
 
-function appendTrade(agent: string, trade: TradeRecord): void {
-  const trades = readTodayTrades(agent);
+function appendTrade(trade: TradeRecord): void {
+  const trades = readTodayTrades();
   trades.push(trade);
-  writeFileSync(todayTradesPath(agent), JSON.stringify(trades, null, 2));
+  writeFileSync(todayTradesPath(), JSON.stringify(trades, null, 2));
 }
 
 async function executeTrade(
-  agent: string,
   ticker: string,
   action: "buy" | "sell",
   amount: number,
   reason?: string,
 ): Promise<TradeResult> {
-  // Check if already traded today (snapshot sets last_trade_date)
-  const today = new Date().toISOString().split("T")[0];
-  const portfolioCheck = readPortfolio(agent);
-  if (portfolioCheck.last_trade_date === today) {
-    return { success: false, error: `already traded today (${today}). Run snapshot resets this for the next trading day.` };
-  }
-
   // Validate amount
   if (amount <= 0) {
     return { success: false, error: "amount must be positive" };
@@ -56,7 +48,7 @@ async function executeTrade(
   }
 
   // Read portfolio
-  const portfolio = readPortfolio(agent);
+  const portfolio = readPortfolio();
   const existingIndex = portfolio.holdings.findIndex((h) => h.ticker === ticker);
   const existing = existingIndex >= 0 ? portfolio.holdings[existingIndex] : null;
 
@@ -109,7 +101,7 @@ async function executeTrade(
     portfolio.cash = round(portfolio.cash - amount, 2);
 
     // Record trade
-    appendTrade(agent, { action: "buy", ticker, amount, price: round(price, 2), shares: sharesBought, reason });
+    appendTrade({ action: "buy", ticker, amount, price: round(price, 2), shares: sharesBought, reason });
 
     // Recalculate totals
     portfolio.total_value = round(
@@ -125,9 +117,8 @@ async function executeTrade(
       summary: `Bought $${amount} of ${ticker} at $${round(price, 2)}${reason ? `. ${reason}` : ""}`,
       timestamp: new Date().toISOString(),
     };
-    portfolio.last_trade_date = today;
 
-    writePortfolio(agent, portfolio);
+    writePortfolio(portfolio);
 
     return {
       success: true,
@@ -169,7 +160,7 @@ async function executeTrade(
     portfolio.cash = round(portfolio.cash + amount, 2);
 
     // Record trade
-    appendTrade(agent, { action: "sell", ticker, amount, price: round(price, 2), shares: sharesSold, reason });
+    appendTrade({ action: "sell", ticker, amount, price: round(price, 2), shares: sharesSold, reason });
 
     // Recalculate totals
     portfolio.total_value = round(
@@ -185,9 +176,8 @@ async function executeTrade(
       summary: `Sold $${amount} of ${ticker} at $${round(price, 2)}${reason ? `. ${reason}` : ""}`,
       timestamp: new Date().toISOString(),
     };
-    portfolio.last_trade_date = today;
 
-    writePortfolio(agent, portfolio);
+    writePortfolio(portfolio);
 
     return {
       success: true,
@@ -206,16 +196,15 @@ async function executeTrade(
 const args = process.argv.slice(2);
 const subcommand = args[0];
 
-if (subcommand !== "execute" || args.length < 5) {
-  console.log(JSON.stringify({ error: "usage: trade.ts execute <agent> <TICKER> <buy|sell> <amount> [reason...]" }));
+if (subcommand !== "execute" || args.length < 4) {
+  console.log(JSON.stringify({ error: "usage: trade.ts execute <TICKER> <buy|sell> <amount> [reason...]" }));
   process.exit(1);
 }
 
-const agent = args[1];
-const ticker = args[2];
-const action = args[3] as "buy" | "sell";
-const amount = parseFloat(args[4]);
-const reason = args.slice(5).join(" ") || undefined;
+const ticker = args[1];
+const action = args[2] as "buy" | "sell";
+const amount = parseFloat(args[3] ?? "");
+const reason = args.slice(4).join(" ") || undefined;
 
 if (action !== "buy" && action !== "sell") {
   console.log(JSON.stringify({ error: "action must be 'buy' or 'sell'" }));
@@ -228,7 +217,7 @@ if (isNaN(amount)) {
 }
 
 try {
-  const result = await executeTrade(agent, ticker, action, amount, reason);
+  const result = await executeTrade(ticker, action, amount, reason);
   console.log(JSON.stringify(result, null, 2));
 } catch (e: any) {
   console.log(JSON.stringify({ error: e.message }));

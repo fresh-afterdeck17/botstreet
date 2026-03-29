@@ -1,3 +1,4 @@
+import "dotenv/config";
 import type { SearchResult } from "./types.js";
 
 export async function webSearch(query: string): Promise<SearchResult[]> {

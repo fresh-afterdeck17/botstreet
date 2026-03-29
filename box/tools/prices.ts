@@ -12,14 +12,12 @@ export async function getCurrentPrice(ticker: string): Promise<PriceQuote> {
 
   const { meta } = chart;
   const marketTime = new Date(meta.regularMarketTime * 1000);
-  const hoursSinceMarket = (Date.now() - marketTime.getTime()) / (1000 * 60 * 60);
 
   return {
     ticker: meta.symbol,
     price: meta.regularMarketPrice,
     name: meta.shortName ?? meta.longName ?? ticker,
     timestamp: marketTime.toISOString(),
-    market_open: hoursSinceMarket < 18,
   };
 }
 

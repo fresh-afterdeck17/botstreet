@@ -8,7 +8,9 @@ import { getBoxByName, isBoxNotFoundError } from "./box-utils.js";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const BACKUP_DIR = path.join(__dirname, "..", ".backups");
 const AGENT_NAMES = ["claude", "gemini", "openai"];
-const BOX_NAMES = AGENT_NAMES.map((n) => `botstreet-${n}`);
+const BOX_NAMES = AGENT_NAMES.map((n) => `botstreet-${n}-v2`);
+const BOX_ROOT = "/workspace/home";
+const DATA_DIR = `${BOX_ROOT}/data`;
 
 const AGENT_FILES = [
   "portfolio.json",
@@ -25,7 +27,7 @@ interface BackupData {
 
 async function backupAgent(box: Box, agent: string): Promise<BackupData> {
   const backup: BackupData = { agent, files: {}, history: {} };
-  const basePath = `/workspace/home/agents/${agent}`;
+  const basePath = DATA_DIR;
 
   for (const file of AGENT_FILES) {
     try {
@@ -54,7 +56,7 @@ async function backupAgent(box: Box, agent: string): Promise<BackupData> {
 }
 
 async function restoreAgent(box: Box, backup: BackupData): Promise<void> {
-  const basePath = `/workspace/home/agents/${backup.agent}`;
+  const basePath = DATA_DIR;
 
   for (const [file, content] of Object.entries(backup.files)) {
     await box.files.write({ path: `${basePath}/${file}`, content });
@@ -85,7 +87,7 @@ async function restoreFromDisk(backupPath: string) {
   const backups = loadBackupFromDisk(backupPath);
   for (const backup of backups) {
     try {
-      const box = await getBoxByName(`botstreet-${backup.agent}`);
+      const box = await getBoxByName(`botstreet-${backup.agent}-v2`);
       await restoreAgent(box, backup);
     } catch (e) {
       console.error(`  Failed to restore ${backup.agent}:`, e);

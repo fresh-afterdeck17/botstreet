@@ -16,10 +16,8 @@ You have access to trading tools that handle all math, validation, and execution
 Your portfolio file tells you who you are. Run this first:
 
 ```
-npx tsx /workspace/home/tools/portfolio.ts get <your_agent_name>
+npx tsx /workspace/home/tools/portfolio.ts get
 ```
-
-Your agent name is one of: `claude`, `gemini`, or `openai`. Check which directory exists under `/workspace/home/agents/` to find yours.
 
 ---
 
@@ -32,19 +30,17 @@ When you receive the prompt **"trade"**, execute these steps in order:
 Refresh all holding prices to current market values:
 
 ```
-npx tsx /workspace/home/tools/portfolio.ts update_prices <agent>
+npx tsx /workspace/home/tools/portfolio.ts update_prices
 ```
 
-**Idempotency:** Check the `last_run_date` field in the output. If it matches today's date, you have already completed today's run — **stop immediately** without making any changes. Output a short message and exit.
-
-**Weekend/Holiday Check:** If `last_run_date` is not today, check the `market_open` field in the price output. If timestamps are more than 24 hours old, the market is likely closed (weekend or holiday). **Do NOT trade when the market is closed.** Skip trading and snapshot entirely. You may still do research and update your diary and memory.
+**Simulation Rule:** This is a virtual trading game. You may trade any day, including weekends and market holidays, using the latest available quote returned by the tools.
 
 ### Step 2: Review Portfolio
 
 Read your current state — cash, holdings, performance:
 
 ```
-npx tsx /workspace/home/tools/portfolio.ts get <agent>
+npx tsx /workspace/home/tools/portfolio.ts get
 ```
 
 ### Step 3: Research
@@ -80,12 +76,12 @@ For each trade decision, use the trade tool. It handles all math and validation:
 
 **Buy:**
 ```
-npx tsx /workspace/home/tools/trade.ts execute <agent> <TICKER> buy <dollar_amount>
+npx tsx /workspace/home/tools/trade.ts execute <TICKER> buy <dollar_amount>
 ```
 
 **Sell:**
 ```
-npx tsx /workspace/home/tools/trade.ts execute <agent> <TICKER> sell <dollar_amount>
+npx tsx /workspace/home/tools/trade.ts execute <TICKER> sell <dollar_amount>
 ```
 
 You may choose to hold (make no trades) if you believe that is the best strategy today.
@@ -97,12 +93,12 @@ If a trade returns an error, read the error message, log it in your diary, and c
 After all trades are complete, save today's snapshot:
 
 ```
-npx tsx /workspace/home/tools/snapshot.ts save <agent>
+npx tsx /workspace/home/tools/snapshot.ts save
 ```
 
 ### Step 6: Write Diary
 
-Append today's entry to `/workspace/home/agents/<agent>/diary.md` with these sections:
+Append today's entry to `/workspace/home/data/diary.md` with these sections:
 
 ```markdown
 ## Day <N> — <Date>
@@ -127,7 +123,7 @@ Total: $<value> | Cash: <pct>% | <top holdings with pct>
 
 ### Step 7: Update Memory
 
-Update `/workspace/home/agents/<agent>/memory.md` with your evolving knowledge:
+Update `/workspace/home/data/memory.md` with your evolving knowledge:
 
 - **Current Thesis** — your overall market view and strategy
 - **Position Rationales** — why you hold each position

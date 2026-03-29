@@ -3,18 +3,18 @@ import { readPortfolio, writePortfolio } from "./portfolio.js";
 import { historyDir, todayTradesPath } from "./types.js";
 import type { HistorySnapshot, TradeRecord } from "./types.js";
 
-function readTodayTrades(agent: string): TradeRecord[] {
+function readTodayTrades(): TradeRecord[] {
   try {
-    const raw = readFileSync(todayTradesPath(agent), "utf-8");
+    const raw = readFileSync(todayTradesPath(), "utf-8");
     return JSON.parse(raw) as TradeRecord[];
   } catch {
     return [];
   }
 }
 
-async function saveSnapshot(agent: string): Promise<{ success: boolean; path: string; overwritten: boolean }> {
-  const portfolio = readPortfolio(agent);
-  const trades = readTodayTrades(agent);
+async function saveSnapshot(): Promise<{ success: boolean; path: string; overwritten: boolean }> {
+  const portfolio = readPortfolio();
+  const trades = readTodayTrades();
 
   const today = new Date().toISOString().split("T")[0];
   const dateForFile = today.replace(/-/g, "_");
@@ -35,7 +35,7 @@ async function saveSnapshot(agent: string): Promise<{ success: boolean; path: st
     trades,
   };
 
-  const dir = historyDir(agent);
+  const dir = historyDir();
   mkdirSync(dir, { recursive: true });
 
   const snapshotPath = `${dir}/portfolio_${dateForFile}.json`;
@@ -44,14 +44,13 @@ async function saveSnapshot(agent: string): Promise<{ success: boolean; path: st
   writeFileSync(snapshotPath, JSON.stringify(snapshot, null, 2));
 
   // Clear today's trades
-  writeFileSync(todayTradesPath(agent), "[]");
+  writeFileSync(todayTradesPath(), "[]");
 
-  // Only increment day_number and set last_trade_date on first run of the day
+  // Keep day_number tied to calendar days, even if snapshots are saved multiple times.
   if (!alreadyExists) {
     portfolio.day_number += 1;
   }
-  portfolio.last_trade_date = today;
-  writePortfolio(agent, portfolio);
+  writePortfolio(portfolio);
 
   return { success: true, path: snapshotPath, overwritten: alreadyExists };
 }
@@ -60,15 +59,14 @@ async function saveSnapshot(agent: string): Promise<{ success: boolean; path: st
 
 const args = process.argv.slice(2);
 const subcommand = args[0];
-const agent = args[1];
 
-if (subcommand !== "save" || !agent) {
-  console.log(JSON.stringify({ error: "usage: snapshot.ts save <agent>" }));
+if (subcommand !== "save") {
+  console.log(JSON.stringify({ error: "usage: snapshot.ts save" }));
   process.exit(1);
 }
 
 try {
-  const result = await saveSnapshot(agent);
+  const result = await saveSnapshot();
   console.log(JSON.stringify(result, null, 2));
 } catch (e: any) {
   console.log(JSON.stringify({ error: e.message }));

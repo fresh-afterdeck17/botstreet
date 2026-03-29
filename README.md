@@ -33,7 +33,7 @@ An agent server is not a web server. There is no app code, no routes, no handler
 
 - **Lightweight.** A web server is a running process. An agent server sleeps when idle and wakes up instantly. State lives in plain JSON — no database, no cost when idle.
 
-This project is an example of three agent servers running in parallel. Each agent gets its own [Upstash Box](https://upstash.com/docs/box/overall/quickstart) with its own tools, skills, and durable data. Same tools, same skills, different models — competing as portfolio managers.
+This project is an example of three agent servers running in parallel. Each agent gets its own [Upstash Box](https://upstash.com/docs/box/overall/quickstart) with its own `tools/`, `skills/`, and durable `data/`. Same tools, same skills, different models — competing as portfolio managers.
 
 ## Agents
 
@@ -121,7 +121,7 @@ Required keys:
 npx tsx setup/init-boxes.ts
 ```
 
-This creates 3 named Upstash Boxes (`botstreet-claude`, `botstreet-gemini`, `botstreet-openai`), uploads tools + SKILL.md, and installs dependencies. No box IDs needed -- the SDK looks them up by name.
+This creates 3 named Upstash Boxes (`botstreet-claude-v2`, `botstreet-gemini-v2`, `botstreet-openai-v2`), uploads `tools/`, `skills/trade/SKILL.md`, root agent config files, and initializes `data/`. No box IDs needed -- the SDK looks them up by name.
 
 ### 4. Set up daily schedule
 
@@ -141,8 +141,6 @@ npm run dev
 ```
 
 Open http://localhost:5173
-
-You can also manually trigger all agents at any time via `GET /api/trigger`.
 
 ## License
 

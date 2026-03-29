@@ -1,17 +1,30 @@
+import { mkdirSync } from "fs";
+
 // ── Path constants ──
 
-export const AGENTS_DIR = process.env.AGENTS_DIR ?? "/workspace/home/agents";
+export const BOX_ROOT = process.env.BOX_ROOT ?? "/workspace/home";
+export const DATA_DIR = process.env.DATA_DIR ?? `${BOX_ROOT}/data`;
 
-export function portfolioPath(agent: string): string {
-  return `${AGENTS_DIR}/${agent}/portfolio.json`;
+export function portfolioPath(): string {
+  return `${DATA_DIR}/portfolio.json`;
 }
 
-export function historyDir(agent: string): string {
-  return `${AGENTS_DIR}/${agent}/history`;
+export function historyDir(): string {
+  const dir = `${DATA_DIR}/history`;
+  mkdirSync(dir, { recursive: true });
+  return dir;
 }
 
-export function todayTradesPath(agent: string): string {
-  return `${AGENTS_DIR}/${agent}/today_trades.json`;
+export function diaryPath(): string {
+  return `${DATA_DIR}/diary.md`;
+}
+
+export function memoryPath(): string {
+  return `${DATA_DIR}/memory.md`;
+}
+
+export function todayTradesPath(): string {
+  return `${DATA_DIR}/today_trades.json`;
 }
 
 // ── Rounding ──
@@ -82,7 +95,6 @@ export interface Portfolio {
   day_number: number;
   start_date: string;
   last_action: LastAction | null;
-  last_trade_date: string | null;
   last_run_date: string | null;
 }
 
@@ -124,7 +136,6 @@ export interface PriceQuote {
   price: number;
   name: string;
   timestamp: string;
-  market_open?: boolean;
 }
 
 export interface HistoricalPrice {

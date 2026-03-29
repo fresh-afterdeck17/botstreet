@@ -19,7 +19,6 @@ export interface Portfolio {
 	day_number: number;
 	start_date: string;
 	last_action: { summary: string; timestamp: string } | null;
-	last_trade_date: string | null;
 	last_run_date: string | null;
 }
 
