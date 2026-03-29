@@ -72,6 +72,18 @@ async function updateBox(name: string, preferredBoxName: string) {
   ]);
   console.log(`  Uploaded skills/trade/SKILL.md + root config files`);
 
+  const envLines: string[] = [];
+  if (process.env.BRAVE_API_KEY) {
+    envLines.push(`BRAVE_API_KEY=${process.env.BRAVE_API_KEY}`);
+  }
+  if (envLines.length > 0) {
+    await box.files.write({
+      path: "/workspace/home/.env",
+      content: envLines.join("\n") + "\n",
+    });
+    console.log(`  Updated .env`);
+  }
+
   // Patch portfolio.json to add missing fields
   try {
     const currentPath = `${DATA_DIR}/portfolio.json`;

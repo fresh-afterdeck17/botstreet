@@ -181,7 +181,7 @@ The trigger and dashboard live outside the boxes:
 botstreet/                      # Your local / CI repo
 │
 ├── trigger/
-│   └── run-daily.ts             # @upstash/box SDK — sends "trade" to all 3 boxes
+│   └── run-trade.ts             # @upstash/box SDK — sends "trade" to all 3 boxes
 │
 ├── web/                         # SvelteKit dashboard
 │   ├── src/
@@ -367,7 +367,7 @@ AI infrastructure is the dominant theme. Overweight semis and cloud. Underweight
 Uses `@upstash/box` SDK to send the `trade` prompt to all three boxes. Can run from a cron job, GitHub Action, or Upstash Workflow.
 
 ```typescript
-// trigger/run-daily.ts
+// trigger/run-trade.ts
 import { Box } from "@upstash/box";
 
 const agents = [
@@ -404,7 +404,7 @@ runDaily();
 
 ### Scheduling Options
 
-- **GitHub Action**: cron schedule, calls `npx tsx trigger/run-daily.ts`
+- **GitHub Action**: cron schedule, calls `npx tsx trigger/run-trade.ts`
 - **Upstash Workflow**: serverless, durable, retries on failure
 - **Simple cron**: on any always-on server
 

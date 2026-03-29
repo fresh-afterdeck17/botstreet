@@ -20,7 +20,14 @@ export async function webSearch(query: string): Promise<SearchResult[]> {
   });
 
   if (!res.ok) {
-    throw new Error(`Brave Search API returned ${res.status}: ${res.statusText}`);
+    let detail = res.statusText;
+    try {
+      const body = (await res.json()) as any;
+      detail = body?.error?.detail ?? body?.error?.code ?? res.statusText;
+    } catch {
+      // keep the HTTP status text if the error payload is not JSON
+    }
+    throw new Error(`Brave Search API returned ${res.status}: ${detail}`);
   }
 
   const data = (await res.json()) as any;

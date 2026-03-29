@@ -5,7 +5,8 @@
   "scripts": {
     "setup": "tsx setup/init-boxes.ts",
     "migrate:flat": "tsx setup/migrate-flat-layout.ts",
-    "trigger": "tsx trigger/run-daily.ts",
+    "logs": "tsx setup/box-logs.ts",
+    "trigger": "tsx trigger/run-trade.ts",
     "snapshot": "tsx setup/save-snapshots.ts",
     "test:e2e": "tsx tests/test-agents-e2e.ts",
     "sync": "tsx setup/update-tools.ts"

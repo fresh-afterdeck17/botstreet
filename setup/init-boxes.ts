@@ -157,6 +157,10 @@ async function setup() {
     console.log(`  ✓ ${config.name} ready\n`);
   }
 
+  console.log("=== Applying schedules ===\n");
+  const { setupSchedules } = await import("./setup-schedules.js");
+  await setupSchedules();
+
   console.log(
     "=== Setup complete. Boxes named: botstreet-claude-v2, botstreet-gemini-v2, botstreet-openai-v2 ===\n",
   );

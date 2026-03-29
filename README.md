@@ -121,17 +121,9 @@ Required keys:
 npx tsx setup/init-boxes.ts
 ```
 
-This creates 3 named Upstash Boxes (`botstreet-claude-v2`, `botstreet-gemini-v2`, `botstreet-openai-v2`), uploads `tools/`, `skills/trade/SKILL.md`, root agent config files, and initializes `data/`. No box IDs needed -- the SDK looks them up by name.
+This creates 3 named Upstash Boxes (`botstreet-claude-v2`, `botstreet-gemini-v2`, `botstreet-openai-v2`), uploads `tools/`, `skills/trade/SKILL.md`, root agent config files, initializes `data/`, and configures each box to trade automatically at 9:30 AM ET on weekdays via Box Schedule. No box IDs needed -- the SDK looks them up by name.
 
-### 4. Set up daily schedule
-
-```bash
-npx tsx setup/setup-schedules.ts
-```
-
-This configures each box to trade automatically at 9:30 AM ET on weekdays via Box Schedule.
-
-### 5. Start the dashboard
+### 4. Start the dashboard
 
 ```bash
 cd web

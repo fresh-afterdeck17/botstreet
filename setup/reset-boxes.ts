@@ -96,9 +96,12 @@ async function restoreFromDisk(backupPath: string) {
 }
 
 async function main() {
+  const args = process.argv.slice(2);
+  const purge = args.includes("--purge");
+
   // If called with a backup file path, just restore from that file
-  const restoreArg = process.argv[2];
-  if (restoreArg && existsSync(restoreArg)) {
+  const restoreArg = args.find((arg) => existsSync(arg));
+  if (restoreArg) {
     await restoreFromDisk(restoreArg);
     console.log("\n=== Restore complete ===");
     return;
@@ -155,7 +158,12 @@ async function main() {
 
   // ── 5. Restore ──
   console.log("\n[4/4 Restore]");
-  if (backupPath) {
+  if (purge) {
+    console.log("  Skipped restore due to --purge. Boxes remain at fresh day-0 state.");
+    if (backupPath) {
+      console.log(`  Backup preserved at ${backupPath}`);
+    }
+  } else if (backupPath) {
     // Always restore from disk file — the source of truth
     await restoreFromDisk(backupPath);
   } else {
@@ -175,6 +183,7 @@ main().catch((err) => {
   if (existsSync(BACKUP_DIR)) {
     console.error(`\nBackups are safe in ${BACKUP_DIR}`);
     console.error("To restore manually: npx tsx setup/reset-boxes.ts <backup-file-path>");
+    console.error("To reset to a fresh day-0 state: npx tsx setup/reset-boxes.ts --purge");
   }
   process.exit(1);
 });
