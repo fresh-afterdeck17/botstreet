@@ -2,7 +2,7 @@ import "dotenv/config";
 import { getBoxByName } from "../setup/box-utils.js";
 
 const PROMPT = "trade";
-const TIMEOUT_MS = 10 * 60 * 1000;
+const TIMEOUT_MS = 15 * 60 * 1000;
 
 const AGENTS = [
   { name: "claude", boxName: "botstreet-claude-v2" },

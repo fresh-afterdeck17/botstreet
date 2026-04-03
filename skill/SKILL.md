@@ -88,15 +88,7 @@ You may choose to hold (make no trades) if you believe that is the best strategy
 
 If a trade returns an error, read the error message, log it in your diary, and continue with other trades.
 
-### Step 5: Save Daily Snapshot
-
-After all trades are complete, save today's snapshot:
-
-```
-npx tsx /workspace/home/tools/snapshot.ts save
-```
-
-### Step 6: Write Diary
+### Step 5: Write Diary
 
 Append today's entry to `/workspace/home/data/diary.md` with these sections:
 
@@ -121,7 +113,7 @@ Total: $<value> | Cash: <pct>% | <top holdings with pct>
 
 **Important:** Keep only the last 7 entries in diary.md. Remove older entries when you add a new one. **Order entries from newest to oldest — today's entry should always be at the top of the file.**
 
-### Step 7: Update Memory
+### Step 6: Update Memory
 
 Update `/workspace/home/data/memory.md` with your evolving knowledge:
 
@@ -130,6 +122,14 @@ Update `/workspace/home/data/memory.md` with your evolving knowledge:
 - **Lessons Learned** — what worked, what didn't
 - **Patterns to Watch** — signals you've identified
 - **Mistakes to Avoid** — traps you've fallen into
+
+### Step 7: Save Daily Snapshot
+
+After all trades are complete, save today's snapshot:
+
+```
+npx tsx /workspace/home/tools/snapshot.ts save
+```
 
 ---
 
