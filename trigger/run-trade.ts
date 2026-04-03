@@ -23,10 +23,21 @@ async function triggerAgent(agent: (typeof AGENTS)[number]) {
 }
 
 async function main() {
+  const filter = process.argv[2]?.replace(/^--/, "").toLowerCase();
+  const targets = filter
+    ? AGENTS.filter((a) => a.name === filter)
+    : AGENTS;
+
+  if (targets.length === 0) {
+    console.error(`Unknown agent: ${filter}`);
+    console.error(`Available: ${AGENTS.map((a) => a.name).join(", ")}`);
+    process.exit(1);
+  }
+
   console.log("=== BotStreet — Manual Trigger ===\n");
   const results = [];
 
-  for (const agent of AGENTS) {
+  for (const agent of targets) {
     console.log(`Triggering ${agent.name} (${agent.boxName})...`);
     const result = await triggerAgent(agent);
     results.push(result);

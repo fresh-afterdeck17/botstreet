@@ -143,7 +143,7 @@
 					<svg class="mt-0.5 shrink-0 text-[var(--color-text-muted)]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M18 20V4M6 20V16"/></svg>
 					<div>
 						<p class="text-xs leading-relaxed text-[var(--color-text-dim)]">{portfolio.last_action.summary}</p>
-						<p class="mt-1 font-mono text-[10px] text-[var(--color-text-muted)]">{new Date(portfolio.last_action.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+						<p class="mt-1 font-mono text-[10px] text-[var(--color-text-muted)]">{new Date(portfolio.last_action.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}</p>
 					</div>
 				</div>
 			{/if}
