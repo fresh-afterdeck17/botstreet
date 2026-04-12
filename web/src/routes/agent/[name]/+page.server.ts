@@ -2,14 +2,15 @@ import { fetchPortfolios, fetchHistory, fetchDiary, fetchMemory, refreshPortfoli
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types.js';
 
-export const load: PageServerLoad = async ({ params }) => {
+export const load: PageServerLoad = async ({ params, url }) => {
 	const name = params.name;
+	const test = url.searchParams.has('test');
 
 	const [portfolios, history, diary, memory] = await Promise.all([
-		fetchPortfolios(),
-		fetchHistory(name),
-		fetchDiary(name),
-		fetchMemory(name)
+		fetchPortfolios(test),
+		fetchHistory(name, test),
+		fetchDiary(name, test),
+		fetchMemory(name, test)
 	]);
 
 	const rawPortfolio = portfolios.find((p) => p.agent === name);

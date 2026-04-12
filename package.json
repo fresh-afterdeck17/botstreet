@@ -9,7 +9,10 @@
     "trigger": "tsx trigger/run-trade.ts",
     "snapshot": "tsx setup/save-snapshots.ts",
     "test:e2e": "tsx tests/test-agents-e2e.ts",
-    "sync": "tsx setup/update-tools.ts"
+    "sync": "tsx setup/update-tools.ts",
+    "setup:test": "tsx setup/init-test-boxes.ts",
+    "delete:test": "tsx setup/delete-test-boxes.ts",
+    "trigger:test": "tsx trigger/run-trade.ts --test"
   },
   "dependencies": {
     "@upstash/box": "^0.1.30",

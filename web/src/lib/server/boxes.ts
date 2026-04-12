@@ -2,11 +2,21 @@ import { getBoxByName } from '$lib/server/box.js';
 import { getOrSetCache } from '$lib/server/cache.js';
 import type { Portfolio, HistorySnapshot, MarketQuote } from '$lib/types.js';
 
-const AGENTS = [
+const PROD_AGENTS = [
 	{ name: 'claude', boxName: 'botstreet-claude-v2' },
 	{ name: 'gemini', boxName: 'botstreet-gemini-v2' },
 	{ name: 'openai', boxName: 'botstreet-openai-v2' }
 ] as const;
+
+const TEST_AGENTS = [
+	{ name: 'claude', boxName: 'test-claude-v2' },
+	{ name: 'gemini', boxName: 'test-gemini-v2' },
+	{ name: 'openai', boxName: 'test-openai-v2' }
+] as const;
+
+function getAgents(test = false) {
+	return test ? TEST_AGENTS : PROD_AGENTS;
+}
 
 const HOMEPAGE_CACHE_TTL_MS = 30 * 1000;
 const BOX_ROOT = '/workspace/home';
@@ -21,9 +31,9 @@ async function readJson<T>(box: Awaited<ReturnType<typeof getBoxByName>>, path: 
 	}
 }
 
-export async function fetchPortfolios(): Promise<Portfolio[]> {
+export async function fetchPortfolios(test = false): Promise<Portfolio[]> {
 	const portfolios = await Promise.all(
-		AGENTS.map(async (agent) => {
+		getAgents(test).map(async (agent) => {
 			try {
 				const box = await getBoxByName(agent.boxName);
 				return await readJson<Portfolio>(box, `${DATA_DIR}/portfolio.json`);
@@ -73,8 +83,8 @@ export async function refreshPortfolioPrices(portfolio: Portfolio): Promise<Port
 	};
 }
 
-export async function fetchHistory(agentName: string): Promise<HistorySnapshot[]> {
-	const agent = AGENTS.find((a) => a.name === agentName);
+export async function fetchHistory(agentName: string, test = false): Promise<HistorySnapshot[]> {
+	const agent = getAgents(test).find((a) => a.name === agentName);
 	if (!agent) return [];
 
 	try {
@@ -93,8 +103,8 @@ export async function fetchHistory(agentName: string): Promise<HistorySnapshot[]
 	}
 }
 
-export async function fetchDiary(agentName: string): Promise<string> {
-	const agent = AGENTS.find((a) => a.name === agentName);
+export async function fetchDiary(agentName: string, test = false): Promise<string> {
+	const agent = getAgents(test).find((a) => a.name === agentName);
 	if (!agent) return '';
 
 	try {
@@ -105,8 +115,8 @@ export async function fetchDiary(agentName: string): Promise<string> {
 	}
 }
 
-export async function fetchMemory(agentName: string): Promise<string> {
-	const agent = AGENTS.find((a) => a.name === agentName);
+export async function fetchMemory(agentName: string, test = false): Promise<string> {
+	const agent = getAgents(test).find((a) => a.name === agentName);
 	if (!agent) return '';
 
 	try {
@@ -144,9 +154,10 @@ export async function fetchMarketData(): Promise<MarketQuote[]> {
 	return quotes;
 }
 
-export async function fetchHomepageData(): Promise<{ portfolios: Portfolio[]; market: MarketQuote[] }> {
-	return getOrSetCache('homepage:data', HOMEPAGE_CACHE_TTL_MS, async () => {
-		const [rawPortfolios, market] = await Promise.all([fetchPortfolios(), fetchMarketData()]);
+export async function fetchHomepageData(test = false): Promise<{ portfolios: Portfolio[]; market: MarketQuote[] }> {
+	const cacheKey = test ? 'homepage:data:test' : 'homepage:data';
+	return getOrSetCache(cacheKey, HOMEPAGE_CACHE_TTL_MS, async () => {
+		const [rawPortfolios, market] = await Promise.all([fetchPortfolios(test), fetchMarketData()]);
 		const portfolios = await Promise.all(rawPortfolios.map(refreshPortfolioPrices));
 		const sorted = [...portfolios].sort((a, b) => b.total_value - a.total_value);
 
