@@ -9,6 +9,6 @@
     "outDir": "dist",
     "rootDir": "."
   },
-  "include": ["setup/**/*.ts", "trigger/**/*.ts"],
-  "exclude": ["node_modules", "box"]
+  "include": ["tools/**/*.ts", "tests/**/*.ts"],
+  "exclude": ["node_modules"]
 }

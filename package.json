@@ -3,24 +3,15 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "setup": "tsx setup/init-boxes.ts",
-    "migrate:flat": "tsx setup/migrate-flat-layout.ts",
-    "logs": "tsx setup/box-logs.ts",
-    "trigger": "tsx trigger/run-trade.ts",
-    "snapshot": "tsx setup/save-snapshots.ts",
-    "test:e2e": "tsx tests/test-agents-e2e.ts",
-    "sync": "tsx setup/update-tools.ts",
-    "setup:test": "tsx setup/init-test-boxes.ts",
-    "delete:test": "tsx setup/delete-test-boxes.ts",
-    "trigger:test": "tsx trigger/run-trade.ts --test"
+    "test:e2e": "tsx tests/test-agents-e2e.ts"
   },
   "dependencies": {
-    "@upstash/box": "^0.1.30",
-    "dotenv": "^16.0.0"
+    "dotenv": "^16.6.1"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
-    "tsx": "^4.0.0",
-    "typescript": "^5.5.0"
+    "@upstash/box": "^0.1.30",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
   }
 }

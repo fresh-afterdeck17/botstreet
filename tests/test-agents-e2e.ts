@@ -3,9 +3,14 @@ import { Agent, Box, BoxApiKey, ClaudeCode, OpenCodeModel } from "@upstash/box";
 import { readdirSync } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { getBoxByName } from "../setup/box-utils.js";
-
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+async function getBoxByName(name: string): Promise<InstanceType<typeof Box>> {
+  const boxes = await Box.list();
+  const match = boxes.find((b: any) => b.name === name);
+  if (!match) throw new Error(`Box not found by name: ${name}`);
+  return Box.get(match.id);
+}
 const ROOT = path.resolve(__dirname, "..");
 
 const PROMPT = "trade";
@@ -16,9 +21,9 @@ const BOX_ROOT = "/workspace/home";
 const DATA_DIR = `${BOX_ROOT}/data`;
 
 const agents = [
-  { name: "claude", boxName: "botstreet-claude-v2" },
-  { name: "gemini", boxName: "botstreet-gemini-v2" },
-  { name: "openai", boxName: "botstreet-openai-v2" },
+  { name: "claude", boxName: "botstreet-claude-v3" },
+  { name: "gemini", boxName: "botstreet-gemini-v3" },
+  { name: "openai", boxName: "botstreet-openai-v3" },
 ] as const;
 
 let passed = 0;
@@ -113,11 +118,11 @@ Do not skip the trade. Do not choose hold. Do not ask follow-up questions.`;
 
 async function syncCloneWorkspace(agentName: string, box: any) {
   await box.files.upload([
-    { path: path.join(ROOT, "box/package.json"), destination: "/workspace/home/package.json" },
-    { path: path.join(ROOT, "box/tsconfig.json"), destination: "/workspace/home/tsconfig.json" },
+    { path: path.join(ROOT, "package.json"), destination: "/workspace/home/package.json" },
+    { path: path.join(ROOT, "tsconfig.json"), destination: "/workspace/home/tsconfig.json" },
   ]);
 
-  const toolsDir = path.join(ROOT, "box/tools");
+  const toolsDir = path.join(ROOT, "tools");
   const toolFiles = readdirSync(toolsDir).filter((file) => file.endsWith(".ts"));
   await box.files.upload(
     toolFiles.map((file) => ({
@@ -270,7 +275,10 @@ async function runAgentE2E(agent: (typeof agents)[number], box: any) {
 }
 
 async function main() {
+  const skipCleanup = process.argv.includes("--no-cleanup");
+
   console.log("=== BotStreet E2E — Three Agents On Clones ===\n");
+  if (skipCleanup) console.log("[--no-cleanup] Clones and snapshots will be preserved for debugging.\n");
 
   const results: Array<{ name: string; totalValue: number; cash: number; trades: number }> = [];
 
@@ -299,23 +307,29 @@ async function main() {
       console.log(`  FAIL ${agent.name}: ${String(error)}`);
       failed++;
     } finally {
-      console.log(`  ${agent.name}: cleanup`);
+      if (skipCleanup) {
+        console.log(`  ${agent.name}: skipping cleanup (--no-cleanup)`);
+        if (clone) console.log(`    clone preserved: ${clone.id}`);
+        if (snapshotId) console.log(`    snapshot preserved: ${snapshotId}`);
+      } else {
+        console.log(`  ${agent.name}: cleanup`);
 
-      if (clone) {
-        try {
-          await clone.delete();
-          console.log(`    deleted clone ${clone.id}`);
-        } catch (error) {
-          console.error(`    failed to delete clone:`, error);
+        if (clone) {
+          try {
+            await clone.delete();
+            console.log(`    deleted clone ${clone.id}`);
+          } catch (error) {
+            console.error(`    failed to delete clone:`, error);
+          }
         }
-      }
 
-      if (sourceBox && snapshotId) {
-        try {
-          await sourceBox.deleteSnapshot(snapshotId);
-          console.log(`    deleted snapshot ${snapshotId}`);
-        } catch (error) {
-          console.error(`    failed to delete snapshot:`, error);
+        if (sourceBox && snapshotId) {
+          try {
+            await sourceBox.deleteSnapshot(snapshotId);
+            console.log(`    deleted snapshot ${snapshotId}`);
+          } catch (error) {
+            console.error(`    failed to delete snapshot:`, error);
+          }
         }
       }
     }
