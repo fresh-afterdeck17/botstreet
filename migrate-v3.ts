@@ -7,10 +7,10 @@ const V2_AGENTS = [
   { name: "openai", boxName: "botstreet-openai-v2" },
 ];
 
-const V3_AGENTS = [
-  { name: "claude", boxName: "botstreet-claude-v3" },
-  { name: "gemini", boxName: "botstreet-gemini-v3" },
-  { name: "openai", boxName: "botstreet-openai-v3" },
+const V10_AGENTS = [
+  { name: "claude", boxName: "botstreet-claude-v10" },
+  { name: "gemini", boxName: "botstreet-gemini-v10" },
+  { name: "openai", boxName: "botstreet-openai-v10" },
 ];
 
 const DATA_DIR = "/workspace/home/data";
@@ -28,7 +28,7 @@ async function listFilesRecursive(box: InstanceType<typeof Box>, dir: string): P
 
   for (const entry of entries) {
     const entryPath = entry.path ?? `${dir}/${entry.name}`;
-    if (entry.type === "directory") {
+    if (entry.is_dir) {
       paths.push(...(await listFilesRecursive(box, entryPath)));
     } else {
       paths.push(entryPath);
@@ -88,16 +88,16 @@ async function main() {
       }
     }
 
-    console.log("\nPull complete. Run with 'migrate' to copy data to v3 boxes.");
+    console.log("\nPull complete. Run with 'migrate' to copy data to v10 boxes.");
     return;
   }
 
   if (mode === "migrate") {
-    console.log("=== Migrating data from v2 → v3 ===\n");
+    console.log("=== Migrating data from v2 → v10 ===\n");
 
     for (let i = 0; i < V2_AGENTS.length; i++) {
       const src = V2_AGENTS[i];
-      const dst = V3_AGENTS[i];
+      const dst = V10_AGENTS[i];
 
       console.log(`\n[${src.name}] ${src.boxName} → ${dst.boxName}`);
 
@@ -118,9 +118,9 @@ async function main() {
 
   console.log("Usage:");
   console.log("  tsx migrate-v3.ts pull      # Preview: list files in v2 boxes");
-  console.log("  tsx migrate-v3.ts migrate   # Copy data from v2 boxes to v3 boxes");
+  console.log("  tsx migrate-v3.ts migrate   # Copy data from v2 boxes to v10 boxes");
   console.log("");
-  console.log("Before running 'migrate', create v3 boxes with: ahi sync");
+  console.log("Before running 'migrate', create v10 boxes with: ahi apply");
 }
 
 main().catch((err) => {

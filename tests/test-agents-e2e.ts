@@ -21,9 +21,9 @@ const BOX_ROOT = "/workspace/home";
 const DATA_DIR = `${BOX_ROOT}/data`;
 
 const agents = [
-  { name: "claude", boxName: "botstreet-claude-v3" },
-  { name: "gemini", boxName: "botstreet-gemini-v3" },
-  { name: "openai", boxName: "botstreet-openai-v3" },
+  { name: "claude", boxName: "botstreet-claude-v10" },
+  { name: "gemini", boxName: "botstreet-gemini-v10" },
+  { name: "openai", boxName: "botstreet-openai-v10" },
 ] as const;
 
 let passed = 0;

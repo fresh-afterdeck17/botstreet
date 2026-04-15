@@ -3,9 +3,9 @@ import { getOrSetCache } from '$lib/server/cache.js';
 import type { Portfolio, HistorySnapshot, MarketQuote } from '$lib/types.js';
 
 const PROD_AGENTS = [
-	{ name: 'claude', boxName: 'botstreet-claude-v3' },
-	{ name: 'gemini', boxName: 'botstreet-gemini-v3' },
-	{ name: 'openai', boxName: 'botstreet-openai-v3' }
+	{ name: 'claude', boxName: 'botstreet-claude-v10' },
+	{ name: 'gemini', boxName: 'botstreet-gemini-v10' },
+	{ name: 'openai', boxName: 'botstreet-openai-v10' }
 ] as const;
 
 const TEST_AGENTS = [
