@@ -6,3 +6,4 @@ dist/
 .svelte-kit/
 .vercel/
 temp
+data

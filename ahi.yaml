@@ -14,6 +14,7 @@ agents:
     schedules:
       - cron: "30 14 * * 1-5"
         prompt: "trade"
+        folder: /workspace/home
         timeout: 600000
 
   - name: botstreet-gemini-v10
@@ -22,6 +23,7 @@ agents:
     schedules:
       - cron: "30 14 * * 1-5"
         prompt: "trade"
+        folder: /workspace/home
         timeout: 600000
 
   - name: botstreet-openai-v10
@@ -30,4 +32,5 @@ agents:
     schedules:
       - cron: "30 14 * * 1-5"
         prompt: "trade"
+        folder: /workspace/home
         timeout: 600000
